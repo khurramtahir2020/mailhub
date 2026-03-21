@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router'
 import { TenantSwitcher } from './tenant-switcher'
+import { useSession } from '../../hooks/use-session'
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: '◈' },
@@ -14,6 +15,8 @@ const navItems = [
 ]
 
 export function Sidebar() {
+  const { user } = useSession()
+
   return (
     <aside className="flex h-screen w-[260px] flex-col border-r border-border/50 bg-muted/30">
       {/* Logo */}
@@ -60,6 +63,29 @@ export function Sidebar() {
             {item.label}
           </NavLink>
         ))}
+
+        {user?.isPlatformAdmin && (
+          <>
+            <div className="mt-4 mb-2 px-3">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/60">Admin</span>
+            </div>
+            <NavLink
+              to="/admin/tenants"
+              className={({ isActive }) =>
+                `group flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-150 ${
+                  isActive
+                    ? 'bg-primary/8 text-primary shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.15)]'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+                }`
+              }
+            >
+              <span className="text-[15px] opacity-60 group-hover:opacity-100 transition-opacity w-5 text-center">
+                ⛊
+              </span>
+              Admin Panel
+            </NavLink>
+          </>
+        )}
       </nav>
 
       {/* Bottom */}

@@ -12,6 +12,7 @@ import { SuppressionsPage } from './pages/suppressions'
 import { UsagePage } from './pages/usage'
 import { ApiKeysPage } from './pages/api-keys'
 import { SettingsPage } from './pages/settings'
+import { AdminTenantsPage } from './pages/admin/tenants'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth0()
@@ -52,6 +53,7 @@ export function App() {
         <Route path="/usage" element={<UsagePage />} />
         <Route path="/api-keys" element={<ApiKeysPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/admin/tenants" element={<AdminTenantsPage />} />
       </Route>
     </Routes>
   )
