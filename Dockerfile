@@ -14,6 +14,7 @@ COPY apps/web/package.json apps/web/
 RUN NODE_ENV=development pnpm install --frozen-lockfile
 
 # Copy full source
+COPY tsconfig.base.json ./
 COPY packages/ packages/
 COPY apps/ apps/
 
