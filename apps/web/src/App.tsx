@@ -2,6 +2,8 @@ import { Routes, Route, Navigate } from 'react-router'
 import { useAuth0 } from '@auth0/auth0-react'
 import { CallbackPage } from './pages/callback'
 import { LoginPage } from './pages/login'
+import { AppLayout } from './components/layout/app-layout'
+import { DashboardPage } from './pages/dashboard'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth0()
@@ -27,15 +29,14 @@ export function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/callback" element={<CallbackPage />} />
       <Route
-        path="/*"
         element={
           <ProtectedRoute>
-            <div className="flex items-center justify-center min-h-screen">
-              <p>Dashboard coming next...</p>
-            </div>
+            <AppLayout />
           </ProtectedRoute>
         }
-      />
+      >
+        <Route index element={<DashboardPage />} />
+      </Route>
     </Routes>
   )
 }
