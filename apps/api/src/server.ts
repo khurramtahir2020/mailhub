@@ -22,6 +22,7 @@ import { messageRoutes } from './routes/messages.js'
 import { contactRoutes } from './routes/contacts.js'
 import { suppressionRoutes } from './routes/suppressions.js'
 import { usageRoutes } from './routes/usage.js'
+import { adminRoutes } from './routes/admin.js'
 import { startCronJobs } from './cron/index.js'
 
 const app = Fastify({
@@ -99,6 +100,7 @@ await app.register(messageRoutes)
 await app.register(contactRoutes)
 await app.register(suppressionRoutes)
 await app.register(usageRoutes)
+await app.register(adminRoutes)
 
 // SPA fallback for production
 if (config.NODE_ENV === 'production') {
