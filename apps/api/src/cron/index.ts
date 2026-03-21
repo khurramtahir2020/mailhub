@@ -1,6 +1,7 @@
 import cron from 'node-cron'
 import { verifyPendingDomains } from './domain-verify.js'
 import { cleanup } from './cleanup.js'
+import { monitorRates } from './rate-monitor.js'
 import pino from 'pino'
 
 const logger = pino({ name: 'cron' })
@@ -16,5 +17,10 @@ export function startCronJobs() {
   // Daily cleanup at 3am UTC
   cron.schedule('0 3 * * *', async () => {
     await cleanup()
+  })
+
+  // Hourly rate monitoring (bounce/complaint auto-suspension)
+  cron.schedule('0 * * * *', async () => {
+    await monitorRates()
   })
 }
