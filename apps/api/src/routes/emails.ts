@@ -10,6 +10,7 @@ import { upsertContact } from '../services/contacts.js'
 import { isEmailSuppressed } from '../services/suppressions.js'
 import { renderTemplate } from '../services/templates.js'
 import { checkIdempotencyKey, storeIdempotencyKey } from '../services/idempotency.js'
+import { validateEmailContent } from '../services/content-checks.js'
 import { config } from '../config.js'
 
 function parseFromAddress(from: string): { email: string; name?: string } {
@@ -140,6 +141,12 @@ export async function emailRoutes(app: FastifyInstance) {
       text = rendered.text
       templateId = tmpl.id
       templateVersion = versionNum
+    }
+
+    // 7b. Content checks
+    const contentWarning = validateEmailContent(subject, html, text)
+    if (contentWarning) {
+      request.log.warn(contentWarning, 'Content check warning')
     }
 
     // 8. Send via SES
