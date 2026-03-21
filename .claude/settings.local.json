@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "*",
+      "Bash(git -C /Users/macminipro/Documents/github/mailhub log --oneline -5)",
+      "Bash(docker compose:*)",
+      "Bash(DATABASE_URL=postgresql://mailhub_user:mailhub_dev_password@localhost:5432/mailhub npx drizzle-kit generate)",
+      "Bash(DATABASE_URL=\"postgres://postgres:8O6KYBDxRtLLBzYmAfE64SUCmbJ4Ze4zv3lZgYBzd7ow7mWzax86O5vfEbCfSFWU@46.225.116.194:5432/mailhub?sslmode=require&uselibpqcompat=true\" npx drizzle-kit migrate)",
+      "Bash(psql:*)",
+      "Bash(node:*)",
+      "Bash(DATABASE_URL=\"postgres://postgres:8O6KYBDxRtLLBzYmAfE64SUCmbJ4Ze4zv3lZgYBzd7ow7mWzax86O5vfEbCfSFWU@46.225.116.194:5432/mailhub?sslmode=require\" npx drizzle-kit migrate)"
+    ]
+  }
+}
