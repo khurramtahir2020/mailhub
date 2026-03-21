@@ -1,6 +1,9 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import rateLimit from '@fastify/rate-limit'
+import fastifyStatic from '@fastify/static'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { config } from './config.js'
 import { createLogger } from './lib/logger.js'
 import { AppError } from './lib/errors.js'
@@ -22,6 +25,17 @@ await app.register(rateLimit, {
   max: 100,
   timeWindow: '1 minute',
 })
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+// In production, serve React build
+if (config.NODE_ENV === 'production') {
+  await app.register(fastifyStatic, {
+    root: path.join(__dirname, '../../web/dist'),
+    prefix: '/',
+    wildcard: false,
+  })
+}
 
 // Global error handler
 app.setErrorHandler((error, request, reply) => {
@@ -48,6 +62,18 @@ await app.register(healthRoutes)
 await app.register(authRoutes)
 await app.register(tenantRoutes)
 await app.register(apiKeyRoutes)
+
+// SPA fallback for production
+if (config.NODE_ENV === 'production') {
+  app.setNotFoundHandler((request, reply) => {
+    if (request.url.startsWith('/api/')) {
+      return reply.status(404).send({
+        error: { code: 'NOT_FOUND', message: 'Route not found' },
+      })
+    }
+    return reply.sendFile('index.html')
+  })
+}
 
 // Start
 try {
