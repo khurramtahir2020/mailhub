@@ -6,6 +6,7 @@ import { createLogger } from './lib/logger.js'
 import { AppError } from './lib/errors.js'
 import { healthRoutes } from './routes/health.js'
 import { authRoutes } from './routes/auth.js'
+import { tenantRoutes } from './routes/tenants.js'
 
 const logger = createLogger(config.LOG_LEVEL)
 
@@ -44,6 +45,7 @@ app.setErrorHandler((error, request, reply) => {
 // Routes
 await app.register(healthRoutes)
 await app.register(authRoutes)
+await app.register(tenantRoutes)
 
 // Start
 try {
