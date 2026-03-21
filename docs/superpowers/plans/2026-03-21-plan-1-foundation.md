@@ -318,6 +318,7 @@ export * from './validation/api-key.js'
   "devDependencies": {
     "@types/node": "^22.0.0",
     "drizzle-kit": "^0.30.0",
+    "pino-pretty": "^13.0.0",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0"
   }
@@ -607,7 +608,7 @@ const envSchema = z.object({
 
 export type Config = z.infer<typeof envSchema>
 
-export function loadConfig(): Config {
+function loadConfig(): Config {
   const result = envSchema.safeParse(process.env)
   if (!result.success) {
     console.error('Invalid environment variables:', result.error.flatten().fieldErrors)
@@ -615,6 +616,9 @@ export function loadConfig(): Config {
   }
   return result.data
 }
+
+// Singleton — parsed once at startup, imported everywhere
+export const config = loadConfig()
 ```
 
 - [ ] **Step 2: Create logger.ts**
@@ -632,11 +636,6 @@ export function createLogger(level: string) {
         : undefined,
   })
 }
-```
-
-Note: Add `pino-pretty` as a dev dependency in apps/api/package.json:
-```
-"pino-pretty": "^13.0.0"
 ```
 
 - [ ] **Step 3: Create errors.ts**
@@ -664,22 +663,15 @@ export const Errors = {
 } as const
 ```
 
-- [ ] **Step 4: Create health route**
+- [ ] **Step 4: Create health route (stub — DB check added in Task 4)**
 
 ```typescript
 // apps/api/src/routes/health.ts
 import type { FastifyInstance } from 'fastify'
-import { sql } from 'drizzle-orm'
-import { db } from '../db/client.js'
 
 export async function healthRoutes(app: FastifyInstance) {
   app.get('/health', async () => {
-    try {
-      await db.execute(sql`SELECT 1`)
-      return { status: 'ok', db: 'connected' }
-    } catch {
-      return { status: 'error', db: 'disconnected' }
-    }
+    return { status: 'ok' }
   })
 }
 ```
@@ -690,19 +682,23 @@ export async function healthRoutes(app: FastifyInstance) {
 // apps/api/src/server.ts
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
-import { loadConfig } from './config.js'
+import rateLimit from '@fastify/rate-limit'
+import { config } from './config.js'
 import { createLogger } from './lib/logger.js'
 import { AppError } from './lib/errors.js'
 import { healthRoutes } from './routes/health.js'
-
-const config = loadConfig()
 const logger = createLogger(config.LOG_LEVEL)
 
 const app = Fastify({ logger })
 
 // Plugins
 await app.register(cors, {
-  origin: config.NODE_ENV === 'development' ? true : false,
+  origin: config.NODE_ENV === 'development',
+})
+
+await app.register(rateLimit, {
+  max: 100,
+  timeWindow: '1 minute',
 })
 
 // Global error handler
@@ -792,7 +788,8 @@ export const db = drizzle(queryClient, { schema })
 
 ```typescript
 // apps/api/src/db/schema.ts
-import { pgTable, uuid, text, boolean, integer, timestamp, uniqueIndex, index } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, boolean, integer, timestamp, uniqueIndex, index, jsonb } from 'drizzle-orm/pg-core'
+import { relations } from 'drizzle-orm'
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -844,15 +841,51 @@ export const auditLogs = pgTable('audit_logs', {
   action: text('action').notNull(),
   resourceType: text('resource_type'),
   resourceId: uuid('resource_id'),
-  metadata: text('metadata'), // JSON string, parsed at application layer
+  metadata: jsonb('metadata'),
   ipAddress: text('ip_address'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => [
   index('audit_logs_tenant_created_idx').on(table.tenantId, table.createdAt),
 ])
+
+// Drizzle relations (required for db.query.* relational API)
+export const usersRelations = relations(users, ({ many }) => ({
+  tenants: many(tenants),
+}))
+
+export const tenantsRelations = relations(tenants, ({ one, many }) => ({
+  user: one(users, { fields: [tenants.userId], references: [users.id] }),
+  apiKeys: many(apiKeys),
+}))
+
+export const apiKeysRelations = relations(apiKeys, ({ one }) => ({
+  tenant: one(tenants, { fields: [apiKeys.tenantId], references: [tenants.id] }),
+}))
 ```
 
-- [ ] **Step 3: Create docker-compose.yml for local dev PostgreSQL**
+- [ ] **Step 3: Update health route to check DB connection**
+
+Now that db client exists, update `apps/api/src/routes/health.ts`:
+
+```typescript
+// apps/api/src/routes/health.ts
+import type { FastifyInstance } from 'fastify'
+import { sql } from 'drizzle-orm'
+import { db } from '../db/client.js'
+
+export async function healthRoutes(app: FastifyInstance) {
+  app.get('/health', async () => {
+    try {
+      await db.execute(sql`SELECT 1`)
+      return { status: 'ok', db: 'connected' }
+    } catch {
+      return { status: 'error', db: 'disconnected' }
+    }
+  })
+}
+```
+
+- [ ] **Step 4: Create docker-compose.yml for local dev PostgreSQL**
 
 ```yaml
 # docker-compose.yml
@@ -917,9 +950,8 @@ import { eq, and } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import { users, apiKeys } from '../db/schema.js'
 import { Errors } from '../lib/errors.js'
-import { loadConfig } from '../config.js'
+import { config } from '../config.js'
 
-const config = loadConfig()
 const JWKS = createRemoteJWKSet(
   new URL(`https://${config.AUTH0_DOMAIN}/.well-known/jwks.json`)
 )
@@ -1173,7 +1205,7 @@ git commit -m "feat: add signup-complete and session auth routes"
 ```typescript
 // apps/api/src/routes/tenants.ts
 import type { FastifyInstance } from 'fastify'
-import { eq, and } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import { tenants } from '../db/schema.js'
 import { requireJwt, requireUser } from '../middleware/auth.js'
@@ -1210,10 +1242,7 @@ export async function tenantRoutes(app: FastifyInstance) {
   // GET /api/v1/tenants
   app.get('/api/v1/tenants', async (request, reply) => {
     const userTenants = await db.query.tenants.findMany({
-      where: and(
-        eq(tenants.userId, request.userId!),
-        // Don't filter by status — let frontend show deleted ones grayed out if needed
-      ),
+      where: eq(tenants.userId, request.userId!),
     })
 
     return reply.send(userTenants.filter(t => t.status !== 'deleted'))
@@ -1539,7 +1568,25 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 @tailwind utilities;
 ```
 
-- [ ] **Step 7: Create src/lib/utils.ts**
+- [ ] **Step 7: Create src/vite-env.d.ts for TypeScript env declarations**
+
+```typescript
+// apps/web/src/vite-env.d.ts
+/// <reference types="vite/client" />
+
+interface ImportMetaEnv {
+  readonly VITE_AUTH0_DOMAIN: string
+  readonly VITE_AUTH0_CLIENT_ID: string
+  readonly VITE_AUTH0_AUDIENCE: string
+  readonly VITE_API_URL: string
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv
+}
+```
+
+- [ ] **Step 8: Create src/lib/utils.ts**
 
 ```typescript
 // apps/web/src/lib/utils.ts
@@ -1715,7 +1762,7 @@ import { useSession } from '../hooks/use-session'
 
 export function CallbackPage() {
   const { isAuthenticated, isLoading } = useAuth0()
-  const { signupComplete, session } = useSession()
+  const { signupComplete } = useSession()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -2409,7 +2456,7 @@ export function useTenants() {
 
 ```tsx
 // apps/web/src/pages/settings.tsx
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from '../hooks/use-session'
 import { useTenants } from '../hooks/use-tenants'
 import { Button } from '../components/ui/button'
@@ -2422,6 +2469,11 @@ export function SettingsPage() {
   const { activeTenant } = useSession()
   const { update } = useTenants()
   const [name, setName] = useState(activeTenant?.name || '')
+
+  // Sync state when active tenant changes
+  useEffect(() => {
+    setName(activeTenant?.name || '')
+  }, [activeTenant?.id])
 
   const handleSave = () => {
     if (!name.trim()) return
