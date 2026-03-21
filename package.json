@@ -1,0 +1,16 @@
+{
+  "name": "mailhub",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "db:generate": "turbo db:generate --filter=@mailhub/api",
+    "db:migrate": "turbo db:migrate --filter=@mailhub/api"
+  },
+  "devDependencies": {
+    "turbo": "^2.4.0",
+    "typescript": "^5.7.0"
+  },
+  "packageManager": "pnpm@9.15.0"
+}
