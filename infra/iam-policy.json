@@ -1,0 +1,23 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ses:SendEmail",
+        "ses:SendRawEmail",
+        "ses:CreateEmailIdentity",
+        "ses:DeleteEmailIdentity",
+        "ses:GetEmailIdentity",
+        "ses:GetAccount",
+        "ses:PutEmailIdentityDkimSigningAttributes"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["sns:Subscribe", "sns:ConfirmSubscription"],
+      "Resource": "arn:aws:sns:us-east-1:*:mailhub-ses-events"
+    }
+  ]
+}
