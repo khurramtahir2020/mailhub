@@ -16,6 +16,12 @@ import { apiKeyRoutes } from './routes/api-keys.js'
 import { domainRoutes } from './routes/domains.js'
 import { senderRoutes } from './routes/senders.js'
 import { templateRoutes } from './routes/templates.js'
+import { emailRoutes } from './routes/emails.js'
+import { webhookSesRoutes } from './routes/webhooks-ses.js'
+import { messageRoutes } from './routes/messages.js'
+import { contactRoutes } from './routes/contacts.js'
+import { suppressionRoutes } from './routes/suppressions.js'
+import { usageRoutes } from './routes/usage.js'
 
 const logger = createLogger(config.LOG_LEVEL)
 
@@ -80,6 +86,12 @@ await app.register(apiKeyRoutes)
 await app.register(domainRoutes)
 await app.register(senderRoutes)
 await app.register(templateRoutes)
+await app.register(emailRoutes)
+await app.register(webhookSesRoutes)
+await app.register(messageRoutes)
+await app.register(contactRoutes)
+await app.register(suppressionRoutes)
+await app.register(usageRoutes)
 
 // SPA fallback for production
 if (config.NODE_ENV === 'production') {
