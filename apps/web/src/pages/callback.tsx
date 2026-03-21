@@ -1,5 +1,5 @@
 import { useAuth0 } from '@auth0/auth0-react'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import { useSession } from '../hooks/use-session'
 
@@ -7,15 +7,17 @@ export function CallbackPage() {
   const { isAuthenticated, isLoading } = useAuth0()
   const { signupComplete } = useSession()
   const navigate = useNavigate()
+  const calledRef = useRef(false)
 
   useEffect(() => {
-    if (isAuthenticated && !isLoading) {
+    if (isAuthenticated && !isLoading && !calledRef.current) {
+      calledRef.current = true
       signupComplete.mutate(undefined, {
         onSuccess: () => navigate('/'),
         onError: () => navigate('/'),
       })
     }
-  }, [isAuthenticated, isLoading])
+  }, [isAuthenticated, isLoading, signupComplete, navigate])
 
   return (
     <div className="flex items-center justify-center min-h-screen">

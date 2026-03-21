@@ -17,6 +17,7 @@ export async function authRoutes(app: FastifyInstance) {
       throw Errors.unauthorized('Missing auth0 subject')
     }
 
+    // Check if user already exists
     const existing = await db.query.users.findFirst({
       where: eq(users.auth0Sub, auth0Sub),
     })
@@ -28,25 +29,38 @@ export async function authRoutes(app: FastifyInstance) {
       return reply.send({ user: existing, tenants: userTenants })
     }
 
+    // Use onConflictDoNothing to handle race condition (concurrent signup requests)
     const result = await db.transaction(async (tx) => {
-      const [user] = await tx.insert(users).values({
+      const inserted = await tx.insert(users).values({
         auth0Sub,
         email: auth0Email || 'unknown@example.com',
         name: null,
-      }).returning()
+      }).onConflictDoNothing({ target: users.auth0Sub }).returning()
 
+      if (inserted.length === 0) {
+        // Another request created the user — fetch and return
+        const raceUser = await tx.query.users.findFirst({
+          where: eq(users.auth0Sub, auth0Sub),
+        })
+        const raceTenants = await tx.query.tenants.findMany({
+          where: eq(tenants.userId, raceUser!.id),
+        })
+        return { user: raceUser!, tenants: raceTenants, created: false }
+      }
+
+      const user = inserted[0]
       const [tenant] = await tx.insert(tenants).values({
         userId: user.id,
         name: 'My Project',
         slug: generateSlug('My Project'),
       }).returning()
 
-      return { user, tenant }
+      return { user, tenants: [tenant], created: true }
     })
 
-    return reply.status(201).send({
+    return reply.status(result.created ? 201 : 200).send({
       user: result.user,
-      tenants: [result.tenant],
+      tenants: result.tenants,
     })
   })
 

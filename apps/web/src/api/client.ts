@@ -4,6 +4,17 @@ type FetchOptions = RequestInit & {
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api/v1'
 
+export class ApiError extends Error {
+  constructor(
+    public code: string,
+    message: string,
+    public status: number,
+  ) {
+    super(message)
+    this.name = 'ApiError'
+  }
+}
+
 export async function apiClient<T>(
   path: string,
   options: FetchOptions = {},
@@ -28,10 +39,10 @@ export async function apiClient<T>(
   })
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({
+    const body = await response.json().catch(() => ({
       error: { code: 'UNKNOWN', message: response.statusText },
     }))
-    throw error
+    throw new ApiError(body.error.code, body.error.message, response.status)
   }
 
   return response.json()

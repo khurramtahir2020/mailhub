@@ -4,9 +4,11 @@ import rateLimit from '@fastify/rate-limit'
 import fastifyStatic from '@fastify/static'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { ZodError } from 'zod'
 import { config } from './config.js'
 import { createLogger } from './lib/logger.js'
 import { AppError } from './lib/errors.js'
+import { sqlClient } from './db/client.js'
 import { healthRoutes } from './routes/health.js'
 import { authRoutes } from './routes/auth.js'
 import { tenantRoutes } from './routes/tenants.js'
@@ -14,7 +16,7 @@ import { apiKeyRoutes } from './routes/api-keys.js'
 
 const logger = createLogger(config.LOG_LEVEL)
 
-const app = Fastify({ logger })
+const app = Fastify({ logger, bodyLimit: 1_048_576 })
 
 // Plugins
 await app.register(cors, {
@@ -42,6 +44,15 @@ app.setErrorHandler((error, request, reply) => {
   if (error instanceof AppError) {
     return reply.status(error.statusCode).send({
       error: { code: error.code, message: error.message },
+    })
+  }
+
+  if (error instanceof ZodError) {
+    return reply.status(400).send({
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', '),
+      },
     })
   }
 
@@ -75,6 +86,16 @@ if (config.NODE_ENV === 'production') {
     return reply.sendFile('index.html')
   })
 }
+
+// Graceful shutdown
+const shutdown = async (signal: string) => {
+  app.log.info({ signal }, 'Shutting down')
+  await app.close()
+  await sqlClient.end()
+  process.exit(0)
+}
+process.on('SIGTERM', () => shutdown('SIGTERM'))
+process.on('SIGINT', () => shutdown('SIGINT'))
 
 // Start
 try {

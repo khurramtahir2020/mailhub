@@ -3,7 +3,7 @@ import { createRemoteJWKSet, jwtVerify } from 'jose'
 import { createHash } from 'node:crypto'
 import { eq, and } from 'drizzle-orm'
 import { db } from '../db/client.js'
-import { users, apiKeys } from '../db/schema.js'
+import { users, apiKeys, tenants } from '../db/schema.js'
 import { Errors } from '../lib/errors.js'
 import { config } from '../config.js'
 
@@ -32,7 +32,11 @@ export async function requireJwt(request: FastifyRequest, reply: FastifyReply) {
       audience: config.AUTH0_AUDIENCE,
     })
 
-    const auth0Sub = payload.sub!
+    const auth0Sub = payload.sub
+    if (!auth0Sub) {
+      throw Errors.unauthorized('Token missing subject claim')
+    }
+
     const user = await db.query.users.findFirst({
       where: eq(users.auth0Sub, auth0Sub),
     })
@@ -48,6 +52,7 @@ export async function requireJwt(request: FastifyRequest, reply: FastifyReply) {
     request.userId = user.id
     request.authMethod = 'jwt'
   } catch (err) {
+    if (err instanceof Error && err.name === 'AppError') throw err
     throw Errors.unauthorized('Invalid or expired token')
   }
 }
@@ -68,10 +73,25 @@ export async function requireApiKey(request: FastifyRequest, reply: FastifyReply
     throw Errors.unauthorized('Invalid API key')
   }
 
-  await db
-    .update(apiKeys)
+  // Check tenant is active (security: deleted/suspended tenant keys must not work)
+  const tenant = await db.query.tenants.findFirst({
+    where: eq(tenants.id, key.tenantId),
+  })
+
+  if (!tenant || tenant.status === 'deleted') {
+    throw Errors.unauthorized('Invalid API key')
+  }
+
+  if (tenant.status === 'suspended') {
+    throw Errors.tenantSuspended()
+  }
+
+  // Update last_used_at (fire and forget — don't block the request)
+  db.update(apiKeys)
     .set({ lastUsedAt: new Date(), updatedAt: new Date() })
     .where(eq(apiKeys.id, key.id))
+    .then(() => {})
+    .catch(() => {})
 
   request.tenantId = key.tenantId
   request.authMethod = 'api_key'
