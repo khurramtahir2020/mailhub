@@ -17,7 +17,8 @@
       "Bash(find packages/shared -name *.d.ts)",
       "Bash(find packages/shared -name *.js -not -path */node_modules/*)",
       "Bash(echo \"exit: $?\")",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(curl:*)"
     ]
   }
 }

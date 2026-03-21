@@ -8,22 +8,29 @@ export function Header() {
   const { user } = useSession()
 
   const initials = user?.name
-    ? user.name.split(' ').map(n => n[0]).join('').toUpperCase()
+    ? user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()
     : user?.email?.charAt(0).toUpperCase() || '?'
 
   return (
-    <header className="flex h-14 items-center justify-end border-b px-6 gap-3">
-      <span className="text-sm text-muted-foreground">{user?.email}</span>
-      <Avatar className="h-8 w-8">
-        <AvatarFallback className="text-xs">{initials}</AvatarFallback>
-      </Avatar>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
-      >
-        Sign out
-      </Button>
+    <header className="flex h-14 items-center justify-between border-b border-border/50 px-8">
+      <div />
+      <div className="flex items-center gap-4">
+        <span className="text-[12px] text-muted-foreground font-mono">{user?.email}</span>
+        <div className="w-px h-5 bg-border/50" />
+        <Avatar className="h-7 w-7 ring-1 ring-border/50">
+          <AvatarFallback className="text-[10px] font-medium bg-secondary text-secondary-foreground">
+            {initials}
+          </AvatarFallback>
+        </Avatar>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-[12px] text-muted-foreground hover:text-foreground h-7 px-2"
+          onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
+        >
+          Sign out
+        </Button>
+      </div>
     </header>
   )
 }
