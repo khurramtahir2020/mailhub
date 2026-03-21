@@ -22,6 +22,7 @@ import { messageRoutes } from './routes/messages.js'
 import { contactRoutes } from './routes/contacts.js'
 import { suppressionRoutes } from './routes/suppressions.js'
 import { usageRoutes } from './routes/usage.js'
+import { startCronJobs } from './cron/index.js'
 
 const logger = createLogger(config.LOG_LEVEL)
 
@@ -103,6 +104,11 @@ if (config.NODE_ENV === 'production') {
     }
     return reply.sendFile('index.html')
   })
+}
+
+// Start cron jobs
+if (config.NODE_ENV !== 'test') {
+  startCronJobs()
 }
 
 // Graceful shutdown
