@@ -8,6 +8,7 @@ const navItems = [
   { to: '/messages', label: 'Messages' },
   { to: '/contacts', label: 'Contacts' },
   { to: '/suppressions', label: 'Suppressions' },
+  { to: '/usage', label: 'Usage' },
   { to: '/api-keys', label: 'API Keys' },
   { to: '/settings', label: 'Settings' },
 ]

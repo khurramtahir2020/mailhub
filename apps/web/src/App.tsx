@@ -4,6 +4,12 @@ import { CallbackPage } from './pages/callback'
 import { LoginPage } from './pages/login'
 import { AppLayout } from './components/layout/app-layout'
 import { DashboardPage } from './pages/dashboard'
+import { DomainsPage } from './pages/domains'
+import { TemplatesPage } from './pages/templates'
+import { MessagesPage } from './pages/messages'
+import { ContactsPage } from './pages/contacts'
+import { SuppressionsPage } from './pages/suppressions'
+import { UsagePage } from './pages/usage'
 import { ApiKeysPage } from './pages/api-keys'
 import { SettingsPage } from './pages/settings'
 
@@ -38,11 +44,12 @@ export function App() {
         }
       >
         <Route index element={<DashboardPage />} />
-        <Route path="/domains" element={<div>Domains page coming...</div>} />
-        <Route path="/templates" element={<div>Templates page coming...</div>} />
-        <Route path="/messages" element={<div>Messages page coming...</div>} />
-        <Route path="/contacts" element={<div>Contacts page coming...</div>} />
-        <Route path="/suppressions" element={<div>Suppressions page coming...</div>} />
+        <Route path="/domains" element={<DomainsPage />} />
+        <Route path="/templates" element={<TemplatesPage />} />
+        <Route path="/messages" element={<MessagesPage />} />
+        <Route path="/contacts" element={<ContactsPage />} />
+        <Route path="/suppressions" element={<SuppressionsPage />} />
+        <Route path="/usage" element={<UsagePage />} />
         <Route path="/api-keys" element={<ApiKeysPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
