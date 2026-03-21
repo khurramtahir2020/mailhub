@@ -13,6 +13,9 @@ import { healthRoutes } from './routes/health.js'
 import { authRoutes } from './routes/auth.js'
 import { tenantRoutes } from './routes/tenants.js'
 import { apiKeyRoutes } from './routes/api-keys.js'
+import { domainRoutes } from './routes/domains.js'
+import { senderRoutes } from './routes/senders.js'
+import { templateRoutes } from './routes/templates.js'
 
 const logger = createLogger(config.LOG_LEVEL)
 
@@ -74,6 +77,9 @@ await app.register(healthRoutes)
 await app.register(authRoutes)
 await app.register(tenantRoutes)
 await app.register(apiKeyRoutes)
+await app.register(domainRoutes)
+await app.register(senderRoutes)
+await app.register(templateRoutes)
 
 // SPA fallback for production
 if (config.NODE_ENV === 'production') {
