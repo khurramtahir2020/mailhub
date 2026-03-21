@@ -5,6 +5,7 @@ import { LoginPage } from './pages/login'
 import { AppLayout } from './components/layout/app-layout'
 import { DashboardPage } from './pages/dashboard'
 import { ApiKeysPage } from './pages/api-keys'
+import { SettingsPage } from './pages/settings'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth0()
@@ -38,6 +39,7 @@ export function App() {
       >
         <Route index element={<DashboardPage />} />
         <Route path="/api-keys" element={<ApiKeysPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Route>
     </Routes>
   )
