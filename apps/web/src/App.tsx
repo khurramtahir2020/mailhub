@@ -38,6 +38,11 @@ export function App() {
         }
       >
         <Route index element={<DashboardPage />} />
+        <Route path="/domains" element={<div>Domains page coming...</div>} />
+        <Route path="/templates" element={<div>Templates page coming...</div>} />
+        <Route path="/messages" element={<div>Messages page coming...</div>} />
+        <Route path="/contacts" element={<div>Contacts page coming...</div>} />
+        <Route path="/suppressions" element={<div>Suppressions page coming...</div>} />
         <Route path="/api-keys" element={<ApiKeysPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>

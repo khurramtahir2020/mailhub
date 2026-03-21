@@ -3,6 +3,11 @@ import { TenantSwitcher } from './tenant-switcher'
 
 const navItems = [
   { to: '/', label: 'Dashboard' },
+  { to: '/domains', label: 'Domains' },
+  { to: '/templates', label: 'Templates' },
+  { to: '/messages', label: 'Messages' },
+  { to: '/contacts', label: 'Contacts' },
+  { to: '/suppressions', label: 'Suppressions' },
   { to: '/api-keys', label: 'API Keys' },
   { to: '/settings', label: 'Settings' },
 ]
