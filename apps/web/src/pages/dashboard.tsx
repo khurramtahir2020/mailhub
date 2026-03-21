@@ -1,8 +1,15 @@
 import { useSession } from '../hooks/use-session'
+import { useUsageSummary } from '../hooks/use-usage'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 
 export function DashboardPage() {
   const { activeTenant } = useSession()
+  const { data: summary, isLoading } = useUsageSummary()
+
+  const deliveryRate =
+    summary && summary.emailsSent > 0
+      ? `${((summary.emailsDelivered / summary.emailsSent) * 100).toFixed(1)}%`
+      : '--'
 
   return (
     <div className="space-y-6">
@@ -12,11 +19,13 @@ export function DashboardPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Emails Sent Today
+              Emails Sent
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">0</p>
+            <p className="text-3xl font-bold">
+              {isLoading ? '...' : summary?.emailsSent ?? 0}
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -26,7 +35,9 @@ export function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">--</p>
+            <p className="text-3xl font-bold">
+              {isLoading ? '...' : deliveryRate}
+            </p>
           </CardContent>
         </Card>
         <Card>
