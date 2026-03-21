@@ -17,51 +17,41 @@ export async function authRoutes(app: FastifyInstance) {
       throw Errors.unauthorized('Missing auth0 subject')
     }
 
-    // Check if user already exists
-    const existing = await db.query.users.findFirst({
-      where: eq(users.auth0Sub, auth0Sub),
-    })
-
-    if (existing) {
-      const userTenants = await db.query.tenants.findMany({
-        where: eq(tenants.userId, existing.id),
+    try {
+      // Check if user already exists
+      const existing = await db.query.users.findFirst({
+        where: eq(users.auth0Sub, auth0Sub),
       })
-      return reply.send({ user: existing, tenants: userTenants })
-    }
 
-    // Use onConflictDoNothing to handle race condition (concurrent signup requests)
-    const result = await db.transaction(async (tx) => {
-      const inserted = await tx.insert(users).values({
+      if (existing) {
+        const userTenants = await db.query.tenants.findMany({
+          where: eq(tenants.userId, existing.id),
+        })
+        return reply.send({ user: existing, tenants: userTenants })
+      }
+
+      // Create user
+      const [user] = await db.insert(users).values({
         auth0Sub,
         email: auth0Email || 'unknown@example.com',
         name: null,
-      }).onConflictDoNothing({ target: users.auth0Sub }).returning()
+      }).returning()
 
-      if (inserted.length === 0) {
-        // Another request created the user — fetch and return
-        const raceUser = await tx.query.users.findFirst({
-          where: eq(users.auth0Sub, auth0Sub),
-        })
-        const raceTenants = await tx.query.tenants.findMany({
-          where: eq(tenants.userId, raceUser!.id),
-        })
-        return { user: raceUser!, tenants: raceTenants, created: false }
-      }
-
-      const user = inserted[0]
-      const [tenant] = await tx.insert(tenants).values({
+      // Create default tenant
+      const [tenant] = await db.insert(tenants).values({
         userId: user.id,
         name: 'My Project',
         slug: generateSlug('My Project'),
       }).returning()
 
-      return { user, tenants: [tenant], created: true }
-    })
-
-    return reply.status(result.created ? 201 : 200).send({
-      user: result.user,
-      tenants: result.tenants,
-    })
+      return reply.status(201).send({
+        user,
+        tenants: [tenant],
+      })
+    } catch (err) {
+      request.log.error({ err, auth0Sub, auth0Email }, 'signup-complete failed')
+      throw err
+    }
   })
 
   app.get('/api/v1/auth/session', {
