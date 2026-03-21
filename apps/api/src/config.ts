@@ -9,7 +9,7 @@ const envSchema = z.object({
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
   AWS_ACCESS_KEY_ID: z.string().min(1).optional(),
   AWS_SECRET_ACCESS_KEY: z.string().min(1).optional(),
-  AWS_REGION: z.string().default('us-east-1'),
+  AWS_REGION: z.string().default('eu-central-1'),
   SES_CONFIGURATION_SET: z.string().default('mailhub-production'),
 })
 

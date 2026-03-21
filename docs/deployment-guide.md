@@ -89,7 +89,7 @@ exports.onExecutePostLogin = async (event, api) => {
         "sns:Subscribe",
         "sns:ConfirmSubscription"
       ],
-      "Resource": "arn:aws:sns:us-east-1:*:mailhub-ses-events"
+      "Resource": "arn:aws:sns:eu-central-1:*:mailhub-ses-events"
     }
   ]
 }
@@ -102,8 +102,8 @@ exports.onExecutePostLogin = async (event, api) => {
 10. Use case: **Application running outside AWS**
 11. Save the **Access Key ID** and **Secret Access Key**
 
-### Step 7: Set Up SES (us-east-1 region)
-1. Switch to **us-east-1** region in the AWS console
+### Step 7: Set Up SES (eu-central-1 region)
+1. Switch to **eu-central-1** region in the AWS console
 2. Go to **Amazon SES → Configuration sets → Create set**
 3. Name: `mailhub-production`
 4. Click **Create set**
@@ -168,7 +168,7 @@ AUTH0_AUDIENCE=https://api.mailhub.com
 # AWS (from Step 6)
 AWS_ACCESS_KEY_ID=your-access-key-id
 AWS_SECRET_ACCESS_KEY=your-secret-access-key
-AWS_REGION=us-east-1
+AWS_REGION=eu-central-1
 SES_CONFIGURATION_SET=mailhub-production
 
 # Server

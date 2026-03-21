@@ -17,7 +17,7 @@
     {
       "Effect": "Allow",
       "Action": ["sns:Subscribe", "sns:ConfirmSubscription"],
-      "Resource": "arn:aws:sns:us-east-1:*:mailhub-ses-events"
+      "Resource": "arn:aws:sns:eu-central-1:*:mailhub-ses-events"
     }
   ]
 }
