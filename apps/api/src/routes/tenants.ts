@@ -5,15 +5,7 @@ import { tenants } from '../db/schema.js'
 import { requireJwt, requireUser } from '../middleware/auth.js'
 import { requireTenantOwnership } from '../middleware/tenant.js'
 import { createTenantSchema, updateTenantSchema } from '@mailhub/shared'
-import { Errors } from '../lib/errors.js'
-
-function generateSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, 50) + '-' + Math.random().toString(36).slice(2, 8)
-}
+import { generateSlug } from '../lib/slug.js'
 
 export async function tenantRoutes(app: FastifyInstance) {
   app.addHook('preHandler', requireJwt)

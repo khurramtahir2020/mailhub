@@ -4,14 +4,7 @@ import { db } from '../db/client.js'
 import { users, tenants } from '../db/schema.js'
 import { requireJwt, requireUser } from '../middleware/auth.js'
 import { Errors } from '../lib/errors.js'
-
-function generateSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, 50) + '-' + Math.random().toString(36).slice(2, 8)
-}
+import { generateSlug } from '../lib/slug.js'
 
 export async function authRoutes(app: FastifyInstance) {
   app.post('/api/v1/auth/signup-complete', {
