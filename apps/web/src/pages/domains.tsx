@@ -97,7 +97,23 @@ export function DomainsPage() {
       ) : (
         domains.map((domain) => {
           const domainSenders = senders.filter((s) => s.domainId === domain.id)
-          const dnsRecords = domain.dnsRecords as Array<{ type: string; name: string; value: string }> | null
+          const dns = domain.dnsRecords as {
+            dkim?: { name: string; type: string; value: string }[]
+            spf?: { name: string; type: string; value: string }
+            dmarc?: { name: string; type: string; value: string }
+          } | null
+
+          // Flatten DNS records into a single array for display
+          const allRecords: { name: string; type: string; value: string; label: string }[] = []
+          if (dns?.dkim) {
+            dns.dkim.forEach((r, i) => allRecords.push({ ...r, label: `DKIM ${i + 1}` }))
+          }
+          if (dns?.spf) {
+            allRecords.push({ ...dns.spf, label: 'SPF' })
+          }
+          if (dns?.dmarc) {
+            allRecords.push({ ...dns.dmarc, label: 'DMARC' })
+          }
 
           return (
             <Card key={domain.id}>
@@ -135,25 +151,28 @@ export function DomainsPage() {
                   <DnsCheckItem label="DMARC" verified={domain.dmarcVerified} />
                 </div>
 
-                {dnsRecords && dnsRecords.length > 0 && (
+                {allRecords.length > 0 && (
                   <>
                     <Separator />
                     <div className="space-y-3">
-                      <p className="text-sm font-medium">DNS Records</p>
-                      {dnsRecords.map((record, i) => (
+                      <p className="text-sm font-medium">Add these DNS records at your DNS provider:</p>
+                      {allRecords.map((record, i) => (
                         <div key={i} className="rounded-md border p-3 space-y-1">
                           <div className="flex items-center justify-between">
-                            <Badge variant="secondary" className="text-xs">{record.type}</Badge>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="secondary" className="text-xs">{record.type}</Badge>
+                              <span className="text-xs font-medium">{record.label}</span>
+                            </div>
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => navigator.clipboard.writeText(record.value)}
                             >
-                              Copy
+                              Copy Value
                             </Button>
                           </div>
-                          <p className="text-xs text-muted-foreground">Name: <code>{record.name}</code></p>
-                          <p className="text-xs text-muted-foreground break-all">Value: <code>{record.value}</code></p>
+                          <p className="text-xs text-muted-foreground">Name: <code className="bg-muted px-1 py-0.5 rounded">{record.name}</code></p>
+                          <p className="text-xs text-muted-foreground break-all">Value: <code className="bg-muted px-1 py-0.5 rounded">{record.value}</code></p>
                         </div>
                       ))}
                     </div>
