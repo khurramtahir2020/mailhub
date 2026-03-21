@@ -98,7 +98,7 @@ export async function webhookSesRoutes(app: FastifyInstance) {
         .set({ status: mappedStatus, updatedAt: new Date() })
         .where(eq(messages.id, resolvedMessageId))
 
-      // Handle bounces
+      // Handle bounces, complaints, and deliveries (mutually exclusive)
       if (eventType === 'Bounce') {
         if (sesEvent.bounce?.bounceType === 'Permanent') {
           await addSuppression({
@@ -112,10 +112,7 @@ export async function webhookSesRoutes(app: FastifyInstance) {
         } else if (sesEvent.bounce?.bounceType === 'Transient') {
           await updateContactStats(msg.contactId, 'totalBounced')
         }
-      }
-
-      // Handle complaints
-      if (eventType === 'Complaint') {
+      } else if (eventType === 'Complaint') {
         await addSuppression({
           tenantId: resolvedTenantId,
           email: msg.toEmail,
@@ -124,40 +121,36 @@ export async function webhookSesRoutes(app: FastifyInstance) {
         })
         await suppressContact(msg.contactId, 'complaint')
         await updateContactStats(msg.contactId, 'totalComplained')
-      }
-
-      // Handle delivery
-      if (eventType === 'Delivery') {
+      } else if (eventType === 'Delivery') {
         await updateContactStats(msg.contactId, 'totalDelivered')
       }
 
       // Update usage_daily for the event type
-      const usageFieldMap: Record<string, string> = {
-        Delivery: 'emails_delivered',
-        Bounce: 'emails_bounced',
-        Complaint: 'emails_complained',
-        Reject: 'emails_rejected',
-      }
+      const today = new Date().toISOString().slice(0, 10)
+      const baseUpsert = () => db.insert(usageDaily).values({
+        tenantId: resolvedTenantId,
+        date: today,
+      })
 
-      const usageField = usageFieldMap[eventType]
-      if (usageField) {
-        const today = new Date().toISOString().slice(0, 10)
-        await db.insert(usageDaily).values({
-          tenantId: resolvedTenantId,
-          date: today,
-        }).onConflictDoUpdate({
+      if (eventType === 'Delivery') {
+        await baseUpsert().onConflictDoUpdate({
           target: [usageDaily.tenantId, usageDaily.date],
-          set: {
-            [usageField === 'emails_delivered' ? 'emailsDelivered' :
-             usageField === 'emails_bounced' ? 'emailsBounced' :
-             usageField === 'emails_complained' ? 'emailsComplained' :
-             'emailsRejected']: sql`${
-              usageField === 'emails_delivered' ? usageDaily.emailsDelivered :
-              usageField === 'emails_bounced' ? usageDaily.emailsBounced :
-              usageField === 'emails_complained' ? usageDaily.emailsComplained :
-              usageDaily.emailsRejected
-            } + 1`,
-          },
+          set: { emailsDelivered: sql`${usageDaily.emailsDelivered} + 1` },
+        })
+      } else if (eventType === 'Bounce') {
+        await baseUpsert().onConflictDoUpdate({
+          target: [usageDaily.tenantId, usageDaily.date],
+          set: { emailsBounced: sql`${usageDaily.emailsBounced} + 1` },
+        })
+      } else if (eventType === 'Complaint') {
+        await baseUpsert().onConflictDoUpdate({
+          target: [usageDaily.tenantId, usageDaily.date],
+          set: { emailsComplained: sql`${usageDaily.emailsComplained} + 1` },
+        })
+      } else if (eventType === 'Reject') {
+        await baseUpsert().onConflictDoUpdate({
+          target: [usageDaily.tenantId, usageDaily.date],
+          set: { emailsRejected: sql`${usageDaily.emailsRejected} + 1` },
         })
       }
     }
