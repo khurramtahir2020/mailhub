@@ -87,12 +87,12 @@ export function UsagePage() {
               </thead>
               <tbody>
                 {daily.map((row) => (
-                  <tr key={row.date} className="border-b border-border/20 last:border-0 hover:bg-secondary/20 transition-colors">
+                  <tr key={row.date} className="border-b border-border/20 last:border-0 hover:bg-muted/50 transition-colors">
                     <td className="py-2.5 pr-4 font-mono text-[12px]">{row.date}</td>
                     <td className="text-right py-2.5 px-4">{row.emailsSent}</td>
-                    <td className="text-right py-2.5 px-4 text-emerald-400">{row.emailsDelivered}</td>
-                    <td className="text-right py-2.5 px-4 text-amber-400">{row.emailsBounced}</td>
-                    <td className="text-right py-2.5 pl-4 text-red-400">{row.emailsComplained}</td>
+                    <td className="text-right py-2.5 px-4 text-emerald-600">{row.emailsDelivered}</td>
+                    <td className="text-right py-2.5 px-4 text-amber-600">{row.emailsBounced}</td>
+                    <td className="text-right py-2.5 pl-4 text-red-600">{row.emailsComplained}</td>
                   </tr>
                 ))}
               </tbody>

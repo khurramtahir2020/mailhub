@@ -139,7 +139,7 @@ export function TemplatesPage() {
             {templates.map((tpl) => (
               <div
                 key={tpl.id}
-                className="stagger-item flex items-center justify-between py-3 px-1 cursor-pointer hover:bg-secondary/30 rounded-lg transition-colors"
+                className="stagger-item flex items-center justify-between py-3 px-1 cursor-pointer hover:bg-muted/50 rounded-lg transition-colors"
                 onClick={() => setSelectedId(tpl.id)}
               >
                 <div className="space-y-0.5">
@@ -149,11 +149,11 @@ export function TemplatesPage() {
                   )}
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[hsl(250,90%,65%)]/10 text-[hsl(250,90%,70%)] border border-[hsl(250,90%,65%)]/20">
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/8 text-primary border border-primary/20">
                     v{tpl.currentVersion}
                   </span>
                   <button
-                    className="text-[11px] text-red-400 hover:text-red-300 transition-colors"
+                    className="text-[11px] text-red-600 hover:text-red-500 transition-colors"
                     onClick={(e) => {
                       e.stopPropagation()
                       remove.mutate(tpl.id)
@@ -231,7 +231,7 @@ function TemplateDetail({ templateId, onBack }: { templateId: string; onBack: ()
           Back
         </button>
         <h1 className="text-2xl font-semibold tracking-tight">{template.name}</h1>
-        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[hsl(250,90%,65%)]/10 text-[hsl(250,90%,70%)] border border-[hsl(250,90%,65%)]/20">
+        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/8 text-primary border border-primary/20">
           v{template.currentVersion}
         </span>
       </div>
@@ -313,7 +313,7 @@ function TemplateDetail({ templateId, onBack }: { templateId: string; onBack: ()
                   <div className="border-t border-border/30" />
                   <div className="space-y-1">
                     <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">HTML Body</span>
-                    <pre className="rounded-lg bg-secondary/30 border border-border/30 p-3 font-mono text-[12px] overflow-auto max-h-64">
+                    <pre className="rounded-lg bg-muted/50 border border-border/30 p-3 font-mono text-[12px] overflow-auto max-h-64">
                       {template.version.htmlBody}
                     </pre>
                   </div>
@@ -324,7 +324,7 @@ function TemplateDetail({ templateId, onBack }: { templateId: string; onBack: ()
                   <div className="border-t border-border/30" />
                   <div className="space-y-1">
                     <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Text Body</span>
-                    <pre className="rounded-lg bg-secondary/30 border border-border/30 p-3 font-mono text-[12px] overflow-auto max-h-64">
+                    <pre className="rounded-lg bg-muted/50 border border-border/30 p-3 font-mono text-[12px] overflow-auto max-h-64">
                       {template.version.textBody}
                     </pre>
                   </div>

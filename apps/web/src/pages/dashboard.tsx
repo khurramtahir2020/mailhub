@@ -76,7 +76,7 @@ export function DashboardPage() {
           </span>
           <div className="flex items-center gap-3 mt-3">
             <span className={`text-lg font-semibold capitalize ${
-              activeTenant?.mode === 'production' ? 'text-emerald-400' : 'text-amber-400'
+              activeTenant?.mode === 'production' ? 'text-emerald-600' : 'text-amber-600'
             }`}>
               {activeTenant?.mode || '--'}
             </span>

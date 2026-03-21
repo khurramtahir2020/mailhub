@@ -15,7 +15,7 @@ const navItems = [
 
 export function Sidebar() {
   return (
-    <aside className="flex h-screen w-[260px] flex-col border-r border-border/50 bg-[hsl(220,14%,5%)]">
+    <aside className="flex h-screen w-[260px] flex-col border-r border-border/50 bg-muted/30">
       {/* Logo */}
       <div className="flex h-16 items-center px-6 border-b border-border/50">
         <div className="flex items-center gap-2.5">
@@ -25,7 +25,7 @@ export function Sidebar() {
           <span className="text-[15px] font-semibold tracking-tight text-foreground">
             MailHub
           </span>
-          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-[hsl(250,90%,65%/0.12)] text-[hsl(250,90%,70%)] border border-[hsl(250,90%,65%/0.15)]">
+          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/15">
             BETA
           </span>
         </div>
@@ -49,7 +49,7 @@ export function Sidebar() {
             className={({ isActive }) =>
               `group flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-150 ${
                 isActive
-                  ? 'bg-[hsl(250,90%,65%/0.1)] text-[hsl(250,90%,75%)] shadow-[inset_0_0_0_1px_hsl(250,90%,65%/0.12)]'
+                  ? 'bg-primary/8 text-primary shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.15)]'
                   : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
               }`
             }
@@ -65,7 +65,7 @@ export function Sidebar() {
       {/* Bottom */}
       <div className="px-4 py-4 border-t border-border/50">
         <div className="flex items-center gap-2 px-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_hsl(160,65%,50%/0.5)]" />
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_hsl(160,60%,42%/0.4)]" />
           <span className="text-[11px] text-muted-foreground">All systems operational</span>
         </div>
       </div>

@@ -54,10 +54,10 @@ export function ApiKeysPage() {
 
         {newKey && (
           <div className="mt-4 rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
-            <p className="mb-2 text-[13px] font-medium text-amber-400">
+            <p className="mb-2 text-[13px] font-medium text-amber-600">
               Copy this key now. It won't be shown again.
             </p>
-            <code className="block break-all rounded-lg bg-secondary/80 p-3 font-mono text-[12px] text-foreground">
+            <code className="block break-all rounded-lg bg-muted p-3 font-mono text-[12px] text-foreground">
               {newKey}
             </code>
             <button
@@ -92,7 +92,7 @@ export function ApiKeysPage() {
                   <div className="flex items-center gap-2">
                     <span className="text-[13px] font-medium">{key.name}</span>
                     {key.isRevoked ? (
-                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
                         Revoked
                       </span>
                     ) : (
@@ -105,7 +105,7 @@ export function ApiKeysPage() {
                 </div>
                 {!key.isRevoked && (
                   <button
-                    className="text-[11px] text-red-400 hover:text-red-300 transition-colors"
+                    className="text-[11px] text-red-600 hover:text-red-500 transition-colors"
                     onClick={() => revoke.mutate(key.id)}
                   >
                     Revoke

@@ -21,8 +21,8 @@ export function TenantSwitcher() {
           {tenant.id === activeTenant.id && (
             <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
               tenant.mode === 'production'
-                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                : 'bg-amber-50 text-amber-700 border border-amber-200'
             }`}>
               {tenant.mode}
             </span>

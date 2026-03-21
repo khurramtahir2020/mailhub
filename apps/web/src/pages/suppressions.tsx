@@ -77,7 +77,7 @@ export function SuppressionsPage() {
                     </p>
                   </div>
                   <button
-                    className="text-[11px] text-red-400 hover:text-red-300 transition-colors"
+                    className="text-[11px] text-red-600 hover:text-red-500 transition-colors"
                     onClick={() => remove.mutate(s.id)}
                     disabled={remove.isPending}
                   >

@@ -5,13 +5,13 @@ import { Input } from '../components/ui/input'
 function contactStatusBadge(status: string) {
   if (status === 'suppressed') {
     return (
-      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
+      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
         {status}
       </span>
     )
   }
   return (
-    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
       {status}
     </span>
   )
@@ -20,7 +20,7 @@ function contactStatusBadge(status: string) {
 function msgStatusBadge(status: string) {
   if (status === 'bounced' || status === 'complained' || status === 'rejected') {
     return (
-      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
+      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
         {status}
       </span>
     )
@@ -84,7 +84,7 @@ export function ContactsPage() {
             {contacts.data.map((contact) => (
               <div
                 key={contact.id}
-                className="stagger-item flex items-center justify-between py-3 px-1 cursor-pointer hover:bg-secondary/30 rounded-lg transition-colors"
+                className="stagger-item flex items-center justify-between py-3 px-1 cursor-pointer hover:bg-muted/50 rounded-lg transition-colors"
                 onClick={() => setSelectedId(contact.id)}
               >
                 <div className="space-y-1">

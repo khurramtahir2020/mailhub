@@ -6,14 +6,14 @@ const statuses = ['all', 'accepted', 'sent', 'delivered', 'bounced', 'complained
 function msgStatusBadge(status: string) {
   if (status === 'bounced' || status === 'complained' || status === 'rejected') {
     return (
-      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
+      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
         {status}
       </span>
     )
   }
   if (status === 'delivered') {
     return (
-      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
         {status}
       </span>
     )
@@ -28,14 +28,14 @@ function msgStatusBadge(status: string) {
 function eventBadge(eventType: string) {
   if (eventType === 'bounce' || eventType === 'complaint') {
     return (
-      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
+      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
         {eventType}
       </span>
     )
   }
   if (eventType === 'delivery') {
     return (
-      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
         {eventType}
       </span>
     )
@@ -78,7 +78,7 @@ export function MessagesPage() {
             key={s}
             className={`text-[12px] font-medium px-3 py-1.5 rounded-lg transition-colors ${
               status === s
-                ? 'bg-[hsl(250,90%,65%)]/15 text-[hsl(250,90%,70%)] border border-[hsl(250,90%,65%)]/30'
+                ? 'bg-primary/8 text-primary border border-primary/30'
                 : 'bg-secondary hover:bg-secondary/80 border border-transparent'
             }`}
             onClick={() => {
@@ -105,7 +105,7 @@ export function MessagesPage() {
             {messages.data.map((msg) => (
               <div
                 key={msg.id}
-                className="stagger-item flex items-center justify-between py-3 px-1 cursor-pointer hover:bg-secondary/30 rounded-lg transition-colors"
+                className="stagger-item flex items-center justify-between py-3 px-1 cursor-pointer hover:bg-muted/50 rounded-lg transition-colors"
                 onClick={() => setSelectedId(msg.id)}
               >
                 <div className="space-y-1 min-w-0 flex-1">

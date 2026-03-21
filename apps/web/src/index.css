@@ -4,33 +4,33 @@
 
 @layer base {
   :root {
-    --background: 220 14% 6%;
-    --foreground: 210 20% 95%;
-    --card: 220 13% 9%;
-    --card-foreground: 210 20% 95%;
-    --popover: 220 13% 9%;
-    --popover-foreground: 210 20% 95%;
-    --primary: 250 90% 65%;
+    --background: 0 0% 99%;
+    --foreground: 224 15% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 15% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 15% 12%;
+    --primary: 250 85% 58%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 12% 14%;
-    --secondary-foreground: 210 15% 70%;
-    --muted: 220 12% 14%;
-    --muted-foreground: 215 12% 50%;
-    --accent: 250 90% 65%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 224 10% 40%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 250 85% 58%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 72% 55%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 12% 16%;
-    --input: 220 12% 16%;
-    --ring: 250 90% 65%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 250 85% 58%;
     --radius: 0.625rem;
-    --chart-1: 250 90% 65%;
-    --chart-2: 160 65% 50%;
-    --chart-3: 30 85% 60%;
-    --chart-4: 200 75% 55%;
-    --chart-5: 340 70% 55%;
-    --success: 160 65% 50%;
-    --warning: 38 92% 55%;
+    --chart-1: 250 85% 58%;
+    --chart-2: 160 60% 42%;
+    --chart-3: 30 80% 52%;
+    --chart-4: 200 70% 50%;
+    --chart-5: 340 65% 50%;
+    --success: 160 60% 42%;
+    --warning: 38 92% 50%;
   }
 }
 
@@ -40,7 +40,7 @@
   }
 
   html {
-    color-scheme: dark;
+    color-scheme: light;
   }
 
   body {
@@ -109,25 +109,22 @@
   .stagger-item:nth-child(7) { animation-delay: 300ms; }
   .stagger-item:nth-child(8) { animation-delay: 350ms; }
 
-  /* Glass card effect */
+  /* Glass card effect — light mode */
   .glass-card {
-    background: linear-gradient(
-      135deg,
-      hsl(220 13% 10% / 0.8),
-      hsl(220 13% 8% / 0.6)
-    );
-    backdrop-filter: blur(12px);
-    border: 1px solid hsl(220 12% 18% / 0.6);
+    background: hsl(0 0% 100%);
+    border: 1px solid hsl(220 13% 90%);
+    box-shadow: 0 1px 3px hsl(220 13% 90% / 0.5), 0 1px 2px hsl(220 13% 90% / 0.3);
   }
 
   .glass-card:hover {
-    border-color: hsl(250 90% 65% / 0.2);
+    border-color: hsl(250 85% 58% / 0.25);
+    box-shadow: 0 4px 12px hsl(250 85% 58% / 0.06), 0 1px 3px hsl(220 13% 90% / 0.4);
   }
 
   /* Glow effect for primary elements */
   .glow-primary {
-    box-shadow: 0 0 20px hsl(250 90% 65% / 0.15),
-                0 0 40px hsl(250 90% 65% / 0.05);
+    box-shadow: 0 0 20px hsl(250 85% 58% / 0.1),
+                0 0 40px hsl(250 85% 58% / 0.04);
   }
 
   /* Status indicator dots */
@@ -140,29 +137,29 @@
 
   .status-dot-active {
     background: hsl(var(--success));
-    box-shadow: 0 0 6px hsl(160 65% 50% / 0.5);
+    box-shadow: 0 0 6px hsl(160 60% 42% / 0.4);
   }
 
   .status-dot-pending {
     background: hsl(var(--warning));
-    box-shadow: 0 0 6px hsl(38 92% 55% / 0.5);
+    box-shadow: 0 0 6px hsl(38 92% 50% / 0.4);
     animation: glow-pulse 2s ease-in-out infinite;
   }
 
   .status-dot-error {
     background: hsl(var(--destructive));
-    box-shadow: 0 0 6px hsl(0 72% 55% / 0.5);
+    box-shadow: 0 0 6px hsl(0 72% 51% / 0.4);
   }
 
   /* Gradient text */
   .text-gradient {
-    background: linear-gradient(135deg, hsl(250 90% 70%), hsl(200 80% 60%));
+    background: linear-gradient(135deg, hsl(250 85% 55%), hsl(200 75% 50%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  /* Subtle noise texture overlay */
+  /* Subtle texture overlay */
   .noise-bg::before {
     content: '';
     position: fixed;
@@ -170,7 +167,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    opacity: 0.015;
+    opacity: 0.02;
     pointer-events: none;
     z-index: 9999;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");

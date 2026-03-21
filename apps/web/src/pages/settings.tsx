@@ -59,7 +59,7 @@ export function SettingsPage() {
           <div className="space-y-2">
             <Label className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Status</Label>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                 {activeTenant.status}
               </span>
               <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border/50">

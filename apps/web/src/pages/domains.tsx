@@ -10,19 +10,19 @@ function statusBadge(status: Domain['status']) {
   switch (status) {
     case 'verified':
       return (
-        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
           verified
         </span>
       )
     case 'pending':
       return (
-        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse">
+        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 animate-pulse">
           pending
         </span>
       )
     case 'failed':
       return (
-        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
+        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
           failed
         </span>
       )
@@ -33,7 +33,7 @@ function DnsCheckItem({ label, verified }: { label: string; verified: boolean })
   return (
     <div className="flex items-center gap-2 text-[13px]">
       <div className={`w-2 h-2 rounded-full ${verified ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : 'bg-gradient-to-r from-zinc-600 to-zinc-500'}`} />
-      <span className={verified ? 'text-emerald-400' : 'text-muted-foreground'}>{label}</span>
+      <span className={verified ? 'text-emerald-600' : 'text-muted-foreground'}>{label}</span>
     </div>
   )
 }
@@ -146,7 +146,7 @@ export function DomainsPage() {
                     Verify
                   </button>
                   <button
-                    className="text-[11px] text-red-400 hover:text-red-300 px-2 py-1.5 transition-colors"
+                    className="text-[11px] text-red-600 hover:text-red-500 px-2 py-1.5 transition-colors"
                     onClick={() => remove.mutate(domain.id)}
                     disabled={remove.isPending}
                   >
@@ -167,10 +167,10 @@ export function DomainsPage() {
                 <div className="border-t border-border/30 pt-4 mt-4 space-y-3">
                   <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">DNS Records</span>
                   {allRecords.map((record, i) => (
-                    <div key={i} className="rounded-lg bg-secondary/30 border border-border/30 p-3 space-y-1.5">
+                    <div key={i} className="rounded-lg bg-muted/50 border border-border/30 p-3 space-y-1.5">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[hsl(250,90%,65%)]/10 text-[hsl(250,90%,70%)] border border-[hsl(250,90%,65%)]/20">
+                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/8 text-primary border border-primary/20">
                             {record.type}
                           </span>
                           <span className="text-[12px] font-medium">{record.label}</span>
@@ -183,10 +183,10 @@ export function DomainsPage() {
                         </button>
                       </div>
                       <p className="text-[12px] text-muted-foreground">
-                        Name: <code className="font-mono text-[11px] bg-secondary/80 px-1.5 py-0.5 rounded">{record.name}</code>
+                        Name: <code className="font-mono text-[11px] bg-muted px-1.5 py-0.5 rounded">{record.name}</code>
                       </p>
                       <p className="text-[12px] text-muted-foreground break-all">
-                        Value: <code className="font-mono text-[11px] bg-secondary/80 px-1.5 py-0.5 rounded">{record.value}</code>
+                        Value: <code className="font-mono text-[11px] bg-muted px-1.5 py-0.5 rounded">{record.value}</code>
                       </p>
                     </div>
                   ))}
@@ -244,7 +244,7 @@ export function DomainsPage() {
                             )}
                           </div>
                           <button
-                            className="text-[11px] text-red-400 hover:text-red-300 transition-colors"
+                            className="text-[11px] text-red-600 hover:text-red-500 transition-colors"
                             onClick={() => removeSender.mutate(sender.id)}
                           >
                             Delete
