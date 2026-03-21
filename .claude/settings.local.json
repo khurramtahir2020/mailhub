@@ -13,7 +13,11 @@
       "Bash(npx shadcn@latest add card dropdown-menu input label separator avatar badge)",
       "Bash(npx vite:*)",
       "Bash(chmod:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(find packages/shared -name *.d.ts)",
+      "Bash(find packages/shared -name *.js -not -path */node_modules/*)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(git rm:*)"
     ]
   }
 }
