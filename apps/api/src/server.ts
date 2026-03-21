@@ -45,9 +45,10 @@ app.setErrorHandler((error, request, reply) => {
     })
   }
 
-  if (error.validation) {
+  const fastifyError = error as any
+  if (fastifyError.validation) {
     return reply.status(400).send({
-      error: { code: 'VALIDATION_ERROR', message: error.message },
+      error: { code: 'VALIDATION_ERROR', message: fastifyError.message },
     })
   }
 

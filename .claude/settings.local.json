@@ -8,7 +8,12 @@
       "Bash(DATABASE_URL=\"postgres://postgres:8O6KYBDxRtLLBzYmAfE64SUCmbJ4Ze4zv3lZgYBzd7ow7mWzax86O5vfEbCfSFWU@46.225.116.194:5432/mailhub?sslmode=require&uselibpqcompat=true\" npx drizzle-kit migrate)",
       "Bash(psql:*)",
       "Bash(node:*)",
-      "Bash(DATABASE_URL=\"postgres://postgres:8O6KYBDxRtLLBzYmAfE64SUCmbJ4Ze4zv3lZgYBzd7ow7mWzax86O5vfEbCfSFWU@46.225.116.194:5432/mailhub?sslmode=require\" npx drizzle-kit migrate)"
+      "Bash(DATABASE_URL=\"postgres://postgres:8O6KYBDxRtLLBzYmAfE64SUCmbJ4Ze4zv3lZgYBzd7ow7mWzax86O5vfEbCfSFWU@46.225.116.194:5432/mailhub?sslmode=require\" npx drizzle-kit migrate)",
+      "Bash(npx shadcn@latest init -y --defaults)",
+      "Bash(npx shadcn@latest add card dropdown-menu input label separator avatar badge)",
+      "Bash(npx vite:*)",
+      "Bash(chmod:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }
