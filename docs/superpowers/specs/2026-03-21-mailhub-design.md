@@ -91,6 +91,7 @@ MailHub is a multi-tenant SaaS that lets developers send, track, and manage tran
 - Every 1 hour: aggregate usage stats
 - Every 1 hour: check bounce/complaint rates per tenant
 - Every 24 hours: clean up expired idempotency keys
+- Every 24 hours: delete messages + message_events older than 30 days, audit_logs older than 90 days
 - Daily: check SES account quota
 
 ---
@@ -251,13 +252,15 @@ id          UUID PK
 tenant_id   UUID FK → tenants
 name        TEXT NOT NULL
 key_prefix  TEXT NOT NULL
-key_hash    TEXT NOT NULL
+key_hash    TEXT NOT NULL              -- SHA-256 of full key
 scope       TEXT DEFAULT 'send_only'    -- send_only | full_access
 last_used_at TIMESTAMPTZ
 is_revoked  BOOLEAN DEFAULT false
 created_at  TIMESTAMPTZ
+updated_at  TIMESTAMPTZ
 
-INDEX(key_prefix)
+INDEX(key_prefix)                       -- first lookup: find candidates by prefix
+INDEX(key_hash)                         -- alternative: direct hash lookup
 ```
 
 ### contacts
@@ -286,7 +289,6 @@ UNIQUE(tenant_id, email)
 id               UUID PK
 tenant_id        UUID FK → tenants
 contact_id       UUID FK → contacts
-idempotency_key  TEXT
 from_email       TEXT NOT NULL
 to_email         TEXT NOT NULL
 subject          TEXT NOT NULL
@@ -297,7 +299,6 @@ ses_message_id   TEXT
 created_at       TIMESTAMPTZ
 updated_at       TIMESTAMPTZ
 
-UNIQUE(tenant_id, idempotency_key)
 INDEX(tenant_id, contact_id)
 INDEX(tenant_id, created_at)
 INDEX(tenant_id, status)
@@ -330,7 +331,8 @@ reason            TEXT NOT NULL
 source_message_id UUID FK → messages NULL
 created_at        TIMESTAMPTZ
 
-UNIQUE(tenant_id, email)
+UNIQUE(tenant_id, email)                    -- for tenant-scoped suppressions
+UNIQUE(email) WHERE tenant_id IS NULL       -- partial index for global suppressions (prevents duplicates)
 INDEX(email)
 ```
 
@@ -450,10 +452,12 @@ All endpoints under `/api/v1`. Two auth methods: JWT (dashboard) and API key (pr
 |---|---|---|---|
 | POST | /emails/send | API Key | Send transactional email (raw or template) |
 
+Tenant context is resolved from the API key. No tenant ID in the URL. The `from` field accepts RFC 5322 format (`"Display Name" <email>`) or plain email. If plain email is provided, the display name is pulled from the matching `sender_identity`.
+
 **Request body (raw):**
 ```json
 {
-  "from": "noreply@notifications.example.com",
+  "from": "My App <noreply@notifications.example.com>",
   "to": "user@gmail.com",
   "subject": "Your order shipped",
   "html": "<h1>Shipped!</h1>",
@@ -542,6 +546,10 @@ All endpoints under `/api/v1`. Two auth methods: JWT (dashboard) and API key (pr
 - IDs: UUIDs
 - Versioning: URL path `/api/v1/`
 - Rate limit headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
+- Rate limiting: MVP uses `@fastify/rate-limit` with in-memory store (resets on restart, sufficient for single-process MVP; migrate to Redis-backed store later)
+- Pagination defaults: page size default 50, max 200
+- CORS: configured via `@fastify/cors` — same-origin in production (static served from Fastify), permissive in development for Vite dev server
+- Health check: `GET /health` returns `{ status: "ok", db: "connected" }` — used by Coolify/Traefik
 
 ---
 
@@ -556,6 +564,8 @@ All endpoints under `/api/v1`. Two auth methods: JWT (dashboard) and API key (pr
 
 ### IAM policy (least privilege)
 
+Uses SES v2 API actions. Note: `@aws-sdk/client-sesv2` is the SDK, but IAM actions still use the `ses:` prefix.
+
 ```json
 {
   "Version": "2012-10-17",
@@ -565,13 +575,11 @@ All endpoints under `/api/v1`. Two auth methods: JWT (dashboard) and API key (pr
       "Action": [
         "ses:SendEmail",
         "ses:SendRawEmail",
-        "ses:VerifyDomainIdentity",
-        "ses:VerifyDomainDkim",
-        "ses:DeleteIdentity",
-        "ses:GetIdentityVerificationAttributes",
-        "ses:GetIdentityDkimAttributes",
-        "ses:GetSendQuota",
-        "ses:GetSendStatistics"
+        "ses:CreateEmailIdentity",
+        "ses:DeleteEmailIdentity",
+        "ses:GetEmailIdentity",
+        "ses:GetAccount",
+        "ses:PutEmailIdentityDkimSigningAttributes"
       ],
       "Resource": "*"
     },
@@ -589,17 +597,17 @@ All endpoints under `/api/v1`. Two auth methods: JWT (dashboard) and API key (pr
 
 ### Sending flow
 
-1. Validate API key → resolve tenant
+1. Validate API key → resolve tenant (tenant inferred from API key, not URL)
 2. Check tenant status (not suspended)
 3. Check daily send limit
-4. Check idempotency key
-5. Validate sender (must match verified domain)
+4. Check idempotency key (lookup in `idempotency_keys` table; if exists and not expired, return cached response)
+5. Validate sender against `sender_identities` table (exact email match, domain must be verified)
 6. Upsert contact
-7. Check suppression (tenant + global)
-8. Render template (if template send)
-9. Call SES SendEmail (synchronous, with tenant_id and message_id as tags)
+7. Check suppression (tenant + global; for global, use partial unique index)
+8. Render template (if template send; missing variables → 400 error)
+9. Call SES v2 SendEmail (synchronous, with tenant_id and message_id as tags)
 10. Store message record
-11. Store idempotency key
+11. Store idempotency key in `idempotency_keys` table (expires in 24h)
 12. Increment usage_daily
 13. Return response
 
@@ -620,8 +628,7 @@ SES → SNS → `POST /api/v1/webhooks/ses`:
 
 ### Domain verification
 
-- `ses.verifyDomainIdentity()` → verification TXT token
-- `ses.verifyDomainDkim()` → 3 DKIM CNAME tokens
+- `ses.createEmailIdentity()` → creates domain identity with DKIM (SES v2 handles both in one call)
 - App generates full DNS guidance (DKIM, SPF, DMARC records to add)
 - Cron polls DNS every 5 minutes for pending domains
 - Checks: SES verification status, DKIM CNAMEs, SPF TXT, DMARC TXT
