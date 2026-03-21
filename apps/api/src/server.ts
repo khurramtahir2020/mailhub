@@ -24,9 +24,15 @@ import { suppressionRoutes } from './routes/suppressions.js'
 import { usageRoutes } from './routes/usage.js'
 import { startCronJobs } from './cron/index.js'
 
-const logger = createLogger(config.LOG_LEVEL)
-
-const app = Fastify({ logger, bodyLimit: 1_048_576 })
+const app = Fastify({
+  logger: {
+    level: config.LOG_LEVEL,
+    ...(config.NODE_ENV === 'development' ? {
+      transport: { target: 'pino-pretty', options: { colorize: true } },
+    } : {}),
+  },
+  bodyLimit: 1_048_576,
+})
 
 // Plugins
 await app.register(cors, {
