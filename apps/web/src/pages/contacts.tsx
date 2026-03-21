@@ -1,10 +1,36 @@
 import { useState } from 'react'
 import { useContacts, useContact, useContactMessages } from '../hooks/use-contacts'
-import { Button } from '../components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Input } from '../components/ui/input'
-import { Badge } from '../components/ui/badge'
-import { Separator } from '../components/ui/separator'
+
+function contactStatusBadge(status: string) {
+  if (status === 'suppressed') {
+    return (
+      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
+        {status}
+      </span>
+    )
+  }
+  return (
+    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+      {status}
+    </span>
+  )
+}
+
+function msgStatusBadge(status: string) {
+  if (status === 'bounced' || status === 'complained' || status === 'rejected') {
+    return (
+      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
+        {status}
+      </span>
+    )
+  }
+  return (
+    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border/50">
+      {status}
+    </span>
+  )
+}
 
 export function ContactsPage() {
   const [search, setSearch] = useState('')
@@ -18,9 +44,16 @@ export function ContactsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Contacts</h1>
+    <div className="space-y-8">
+      {/* Page header */}
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">Contacts</h1>
+        <p className="text-[13px] text-muted-foreground mt-1">
+          View contacts and their message history
+        </p>
+      </div>
 
+      {/* Search */}
       <div className="flex gap-3">
         <Input
           placeholder="Search by email..."
@@ -29,68 +62,65 @@ export function ContactsPage() {
             setSearch(e.target.value)
             setPage(1)
           }}
-          className="max-w-sm"
+          className="max-w-sm bg-secondary/50 border-border/50 focus:border-[hsl(250,90%,65%/0.5)] focus:ring-1 focus:ring-[hsl(250,90%,65%/0.2)]"
         />
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          {isLoading ? (
-            <p className="text-sm text-muted-foreground p-6">Loading...</p>
-          ) : !contacts || contacts.data.length === 0 ? (
-            <p className="text-sm text-muted-foreground p-6 text-center">
-              {search ? 'No contacts matching your search.' : 'No contacts yet. Contacts are created automatically when you send emails.'}
+      {/* Contact list */}
+      <div className="glass-card rounded-xl p-5">
+        {isLoading ? (
+          <p className="text-[13px] text-muted-foreground">Loading...</p>
+        ) : !contacts || contacts.data.length === 0 ? (
+          <div className="py-8 text-center">
+            <p className="text-muted-foreground text-[13px]">
+              {search ? 'No contacts matching your search.' : 'No contacts yet.'}
             </p>
-          ) : (
-            <div className="divide-y">
-              {contacts.data.map((contact) => (
-                <div
-                  key={contact.id}
-                  className="flex items-center justify-between p-4 cursor-pointer hover:bg-accent/30 transition-colors"
-                  onClick={() => setSelectedId(contact.id)}
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">{contact.email}</span>
-                      <Badge variant={contact.status === 'suppressed' ? 'destructive' : 'secondary'} className="text-xs">
-                        {contact.status}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Sent: {contact.totalSent} | Delivered: {contact.totalDelivered}
-                      {contact.lastEmailedAt && ` | Last: ${new Date(contact.lastEmailedAt).toLocaleString()}`}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {contacts && contacts.pages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Page {contacts.page} of {contacts.pages} ({contacts.total} total)
-          </p>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => p - 1)}
-              disabled={page <= 1}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => p + 1)}
-              disabled={page >= contacts.pages}
-            >
-              Next
-            </Button>
+            {!search && (
+              <p className="text-muted-foreground/60 text-[12px] mt-1">Contacts are created automatically when you send emails.</p>
+            )}
           </div>
+        ) : (
+          <div className="divide-y divide-border/30">
+            {contacts.data.map((contact) => (
+              <div
+                key={contact.id}
+                className="stagger-item flex items-center justify-between py-3 px-1 cursor-pointer hover:bg-secondary/30 rounded-lg transition-colors"
+                onClick={() => setSelectedId(contact.id)}
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[13px] font-medium">{contact.email}</span>
+                    {contactStatusBadge(contact.status)}
+                  </div>
+                  <p className="text-[12px] text-muted-foreground">
+                    Sent: {contact.totalSent} | Delivered: {contact.totalDelivered}
+                    {contact.lastEmailedAt && ` | Last: ${new Date(contact.lastEmailedAt).toLocaleString()}`}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Pagination */}
+      {contacts && contacts.pages > 1 && (
+        <div className="flex items-center justify-center gap-4 text-[13px] text-muted-foreground">
+          <button
+            className="hover:text-foreground transition-colors disabled:opacity-40"
+            onClick={() => setPage((p) => p - 1)}
+            disabled={page <= 1}
+          >
+            &larr; Previous
+          </button>
+          <span>Page {contacts.page} of {contacts.pages}</span>
+          <button
+            className="hover:text-foreground transition-colors disabled:opacity-40"
+            onClick={() => setPage((p) => p + 1)}
+            disabled={page >= contacts.pages}
+          >
+            Next &rarr;
+          </button>
         </div>
       )}
     </div>
@@ -104,119 +134,106 @@ function ContactDetail({ contactId, onBack }: { contactId: string; onBack: () =>
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <Button variant="ghost" onClick={onBack}>Back to contacts</Button>
-        <p className="text-sm text-muted-foreground">Loading...</p>
+      <div className="space-y-8">
+        <button onClick={onBack} className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
+          Back to contacts
+        </button>
+        <p className="text-[13px] text-muted-foreground">Loading...</p>
       </div>
     )
   }
 
   if (!contact) {
     return (
-      <div className="space-y-6">
-        <Button variant="ghost" onClick={onBack}>Back to contacts</Button>
-        <p className="text-sm text-muted-foreground">Contact not found.</p>
+      <div className="space-y-8">
+        <button onClick={onBack} className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
+          Back to contacts
+        </button>
+        <p className="text-[13px] text-muted-foreground">Contact not found.</p>
       </div>
     )
   }
 
+  const stats = [
+    { label: 'Sent', value: contact.totalSent, color: 'from-[hsl(250,90%,65%)] to-[hsl(200,80%,55%)]' },
+    { label: 'Delivered', value: contact.totalDelivered, color: 'from-emerald-500 to-emerald-400' },
+    { label: 'Bounced', value: contact.totalBounced, color: 'from-amber-500 to-orange-400' },
+    { label: 'Complained', value: contact.totalComplained, color: 'from-red-500 to-rose-400' },
+  ]
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Header */}
       <div className="flex items-center gap-3">
-        <Button variant="ghost" onClick={onBack}>Back</Button>
+        <button onClick={onBack} className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
+          Back
+        </button>
         <h1 className="text-2xl font-semibold tracking-tight">{contact.email}</h1>
-        <Badge variant={contact.status === 'suppressed' ? 'destructive' : 'secondary'}>
-          {contact.status}
-        </Badge>
+        {contactStatusBadge(contact.status)}
       </div>
 
+      {/* Stat cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Sent</CardTitle>
-          </CardHeader>
-          <CardContent><p className="text-2xl font-bold">{contact.totalSent}</p></CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Delivered</CardTitle>
-          </CardHeader>
-          <CardContent><p className="text-2xl font-bold">{contact.totalDelivered}</p></CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Bounced</CardTitle>
-          </CardHeader>
-          <CardContent><p className="text-2xl font-bold">{contact.totalBounced}</p></CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Complained</CardTitle>
-          </CardHeader>
-          <CardContent><p className="text-2xl font-bold">{contact.totalComplained}</p></CardContent>
-        </Card>
+        {stats.map((stat) => (
+          <div key={stat.label} className="glass-card rounded-xl p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${stat.color}`} />
+              <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">{stat.label}</span>
+            </div>
+            <p className="text-3xl font-bold tracking-tight">{stat.value}</p>
+          </div>
+        ))}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Message History</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {msgsLoading ? (
-            <p className="text-sm text-muted-foreground">Loading...</p>
-          ) : !messages || messages.data.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No messages found.</p>
-          ) : (
-            <div className="space-y-3">
+      {/* Message history */}
+      <div className="glass-card rounded-xl p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-2 h-2 rounded-full bg-gradient-to-r from-[hsl(250,90%,65%)] to-[hsl(200,80%,55%)]" />
+          <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Message History</span>
+        </div>
+
+        {msgsLoading ? (
+          <p className="text-[13px] text-muted-foreground">Loading...</p>
+        ) : !messages || messages.data.length === 0 ? (
+          <p className="text-[13px] text-muted-foreground">No messages found.</p>
+        ) : (
+          <>
+            <div className="divide-y divide-border/30">
               {messages.data.map((msg) => (
-                <div key={msg.id} className="flex items-center justify-between rounded-md border p-3">
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">{msg.subject}</p>
-                    <p className="text-xs text-muted-foreground">
+                <div key={msg.id} className="stagger-item flex items-center justify-between py-3 px-1">
+                  <div className="space-y-0.5">
+                    <p className="text-[13px] font-medium">{msg.subject}</p>
+                    <p className="text-[12px] text-muted-foreground">
                       {new Date(msg.createdAt).toLocaleString()}
                     </p>
                   </div>
-                  <Badge
-                    variant={msg.status === 'bounced' || msg.status === 'complained' || msg.status === 'rejected' ? 'destructive' : 'secondary'}
-                    className="text-xs"
-                  >
-                    {msg.status}
-                  </Badge>
+                  {msgStatusBadge(msg.status)}
                 </div>
               ))}
-
-              {messages.pages > 1 && (
-                <>
-                  <Separator />
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs text-muted-foreground">
-                      Page {messages.page} of {messages.pages}
-                    </p>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setMsgPage((p) => p - 1)}
-                        disabled={msgPage <= 1}
-                      >
-                        Previous
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setMsgPage((p) => p + 1)}
-                        disabled={msgPage >= messages.pages}
-                      >
-                        Next
-                      </Button>
-                    </div>
-                  </div>
-                </>
-              )}
             </div>
-          )}
-        </CardContent>
-      </Card>
+
+            {messages.pages > 1 && (
+              <div className="flex items-center justify-center gap-4 text-[13px] text-muted-foreground pt-4 border-t border-border/30 mt-4">
+                <button
+                  className="hover:text-foreground transition-colors disabled:opacity-40"
+                  onClick={() => setMsgPage((p) => p - 1)}
+                  disabled={msgPage <= 1}
+                >
+                  &larr; Previous
+                </button>
+                <span>Page {messages.page} of {messages.pages}</span>
+                <button
+                  className="hover:text-foreground transition-colors disabled:opacity-40"
+                  onClick={() => setMsgPage((p) => p + 1)}
+                  disabled={msgPage >= messages.pages}
+                >
+                  Next &rarr;
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   )
 }

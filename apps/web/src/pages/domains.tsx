@@ -2,28 +2,38 @@ import { useState } from 'react'
 import { useDomains } from '../hooks/use-domains'
 import { useSenders } from '../hooks/use-senders'
 import { Button } from '../components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
-import { Badge } from '../components/ui/badge'
-import { Separator } from '../components/ui/separator'
 import type { Domain } from '@mailhub/shared'
 
-const statusColor = (status: Domain['status']) => {
+function statusBadge(status: Domain['status']) {
   switch (status) {
-    case 'verified': return 'default' as const
-    case 'pending': return 'secondary' as const
-    case 'failed': return 'destructive' as const
+    case 'verified':
+      return (
+        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          verified
+        </span>
+      )
+    case 'pending':
+      return (
+        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse">
+          pending
+        </span>
+      )
+    case 'failed':
+      return (
+        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
+          failed
+        </span>
+      )
   }
 }
 
 function DnsCheckItem({ label, verified }: { label: string; verified: boolean }) {
   return (
-    <div className="flex items-center gap-2 text-sm">
-      <span className={verified ? 'text-green-600' : 'text-muted-foreground'}>
-        {verified ? '✓' : '○'}
-      </span>
-      <span>{label}</span>
+    <div className="flex items-center gap-2 text-[13px]">
+      <div className={`w-2 h-2 rounded-full ${verified ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : 'bg-gradient-to-r from-zinc-600 to-zinc-500'}`} />
+      <span className={verified ? 'text-emerald-400' : 'text-muted-foreground'}>{label}</span>
     </div>
   )
 }
@@ -58,42 +68,47 @@ export function DomainsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Domains</h1>
+    <div className="space-y-8">
+      {/* Page header */}
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">Domains</h1>
+        <p className="text-[13px] text-muted-foreground mt-1">
+          Configure sending domains and DNS authentication
+        </p>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Add Domain</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex gap-3">
-            <div className="flex-1">
-              <Label htmlFor="domain-name" className="sr-only">Domain</Label>
-              <Input
-                id="domain-name"
-                placeholder="e.g., example.com"
-                value={domainInput}
-                onChange={(e) => setDomainInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleAddDomain()}
-              />
-            </div>
-            <Button onClick={handleAddDomain} disabled={add.isPending || !domainInput.trim()}>
-              Add Domain
-            </Button>
+      {/* Add domain */}
+      <div className="glass-card rounded-xl p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-2 h-2 rounded-full bg-gradient-to-r from-[hsl(250,90%,65%)] to-[hsl(200,80%,55%)]" />
+          <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Add Domain</span>
+        </div>
+        <div className="flex gap-3">
+          <div className="flex-1">
+            <Label htmlFor="domain-name" className="sr-only">Domain</Label>
+            <Input
+              id="domain-name"
+              placeholder="e.g., example.com"
+              value={domainInput}
+              onChange={(e) => setDomainInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddDomain()}
+              className="bg-secondary/50 border-border/50 focus:border-[hsl(250,90%,65%/0.5)] focus:ring-1 focus:ring-[hsl(250,90%,65%/0.2)]"
+            />
           </div>
-        </CardContent>
-      </Card>
+          <Button onClick={handleAddDomain} disabled={add.isPending || !domainInput.trim()}>
+            Add Domain
+          </Button>
+        </div>
+      </div>
 
+      {/* Domain list */}
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading...</p>
+        <p className="text-[13px] text-muted-foreground">Loading...</p>
       ) : domains.length === 0 ? (
-        <Card>
-          <CardContent className="py-8">
-            <p className="text-sm text-muted-foreground text-center">
-              No domains yet. Add a domain above to start sending emails.
-            </p>
-          </CardContent>
-        </Card>
+        <div className="glass-card rounded-xl p-12 text-center">
+          <p className="text-muted-foreground text-[13px]">No domains yet.</p>
+          <p className="text-muted-foreground/60 text-[12px] mt-1">Add a domain above to start sending emails.</p>
+        </div>
       ) : (
         domains.map((domain) => {
           const domainSenders = senders.filter((s) => s.domainId === domain.id)
@@ -103,7 +118,6 @@ export function DomainsPage() {
             dmarc?: { name: string; type: string; value: string }
           } | null
 
-          // Flatten DNS records into a single array for display
           const allRecords: { name: string; type: string; value: string; label: string }[] = []
           if (dns?.dkim) {
             dns.dkim.forEach((r, i) => allRecords.push({ ...r, label: `DKIM ${i + 1}` }))
@@ -116,134 +130,132 @@ export function DomainsPage() {
           }
 
           return (
-            <Card key={domain.id}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <CardTitle className="text-base">{domain.domain}</CardTitle>
-                    <Badge variant={statusColor(domain.status)}>{domain.status}</Badge>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => verify.mutate(domain.id)}
-                      disabled={verify.isPending}
-                    >
-                      Verify
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-destructive hover:text-destructive"
-                      onClick={() => remove.mutate(domain.id)}
-                      disabled={remove.isPending}
-                    >
-                      Delete
-                    </Button>
-                  </div>
+            <div key={domain.id} className="glass-card rounded-xl p-5 transition-all duration-200 hover:translate-y-[-2px]">
+              {/* Domain header */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-[15px] font-semibold tracking-tight">{domain.domain}</span>
+                  {statusBadge(domain.status)}
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex gap-6">
-                  <DnsCheckItem label="DKIM" verified={domain.dkimVerified} />
-                  <DnsCheckItem label="SPF" verified={domain.spfVerified} />
-                  <DnsCheckItem label="DMARC" verified={domain.dmarcVerified} />
+                <div className="flex gap-2">
+                  <button
+                    className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors"
+                    onClick={() => verify.mutate(domain.id)}
+                    disabled={verify.isPending}
+                  >
+                    Verify
+                  </button>
+                  <button
+                    className="text-[11px] text-red-400 hover:text-red-300 px-2 py-1.5 transition-colors"
+                    onClick={() => remove.mutate(domain.id)}
+                    disabled={remove.isPending}
+                  >
+                    Delete
+                  </button>
                 </div>
+              </div>
 
-                {allRecords.length > 0 && (
-                  <>
-                    <Separator />
-                    <div className="space-y-3">
-                      <p className="text-sm font-medium">Add these DNS records at your DNS provider:</p>
-                      {allRecords.map((record, i) => (
-                        <div key={i} className="rounded-md border p-3 space-y-1">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <Badge variant="secondary" className="text-xs">{record.type}</Badge>
-                              <span className="text-xs font-medium">{record.label}</span>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => navigator.clipboard.writeText(record.value)}
-                            >
-                              Copy Value
-                            </Button>
+              {/* DNS check indicators */}
+              <div className="flex gap-6 mb-4">
+                <DnsCheckItem label="DKIM" verified={domain.dkimVerified} />
+                <DnsCheckItem label="SPF" verified={domain.spfVerified} />
+                <DnsCheckItem label="DMARC" verified={domain.dmarcVerified} />
+              </div>
+
+              {/* DNS records */}
+              {allRecords.length > 0 && (
+                <div className="border-t border-border/30 pt-4 mt-4 space-y-3">
+                  <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">DNS Records</span>
+                  {allRecords.map((record, i) => (
+                    <div key={i} className="rounded-lg bg-secondary/30 border border-border/30 p-3 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[hsl(250,90%,65%)]/10 text-[hsl(250,90%,70%)] border border-[hsl(250,90%,65%)]/20">
+                            {record.type}
+                          </span>
+                          <span className="text-[12px] font-medium">{record.label}</span>
+                        </div>
+                        <button
+                          className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors"
+                          onClick={() => navigator.clipboard.writeText(record.value)}
+                        >
+                          Copy Value
+                        </button>
+                      </div>
+                      <p className="text-[12px] text-muted-foreground">
+                        Name: <code className="font-mono text-[11px] bg-secondary/80 px-1.5 py-0.5 rounded">{record.name}</code>
+                      </p>
+                      <p className="text-[12px] text-muted-foreground break-all">
+                        Value: <code className="font-mono text-[11px] bg-secondary/80 px-1.5 py-0.5 rounded">{record.value}</code>
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Senders */}
+              {domain.status === 'verified' && (
+                <div className="border-t border-border/30 pt-4 mt-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Senders</span>
+                    <button
+                      className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors"
+                      onClick={() => setAddingSenderForDomain(
+                        addingSenderForDomain === domain.id ? null : domain.id
+                      )}
+                    >
+                      {addingSenderForDomain === domain.id ? 'Cancel' : 'Add Sender'}
+                    </button>
+                  </div>
+
+                  {addingSenderForDomain === domain.id && (
+                    <div className="flex gap-3">
+                      <Input
+                        placeholder="sender@example.com"
+                        value={senderEmail}
+                        onChange={(e) => setSenderEmail(e.target.value)}
+                        className="bg-secondary/50 border-border/50 focus:border-[hsl(250,90%,65%/0.5)] focus:ring-1 focus:ring-[hsl(250,90%,65%/0.2)]"
+                      />
+                      <Input
+                        placeholder="Display name (optional)"
+                        value={senderName}
+                        onChange={(e) => setSenderName(e.target.value)}
+                        className="bg-secondary/50 border-border/50 focus:border-[hsl(250,90%,65%/0.5)] focus:ring-1 focus:ring-[hsl(250,90%,65%/0.2)]"
+                      />
+                      <Button
+                        onClick={() => handleAddSender(domain.id)}
+                        disabled={addSender.isPending || !senderEmail.trim()}
+                      >
+                        Add
+                      </Button>
+                    </div>
+                  )}
+
+                  {domainSenders.length === 0 ? (
+                    <p className="text-[13px] text-muted-foreground">No senders for this domain.</p>
+                  ) : (
+                    <div className="divide-y divide-border/30">
+                      {domainSenders.map((sender) => (
+                        <div key={sender.id} className="stagger-item flex items-center justify-between py-3 px-1">
+                          <div className="space-y-0.5">
+                            <span className="text-[13px] font-medium">{sender.email}</span>
+                            {sender.name && (
+                              <p className="text-[12px] text-muted-foreground">{sender.name}</p>
+                            )}
                           </div>
-                          <p className="text-xs text-muted-foreground">Name: <code className="bg-muted px-1 py-0.5 rounded">{record.name}</code></p>
-                          <p className="text-xs text-muted-foreground break-all">Value: <code className="bg-muted px-1 py-0.5 rounded">{record.value}</code></p>
+                          <button
+                            className="text-[11px] text-red-400 hover:text-red-300 transition-colors"
+                            onClick={() => removeSender.mutate(sender.id)}
+                          >
+                            Delete
+                          </button>
                         </div>
                       ))}
                     </div>
-                  </>
-                )}
-
-                {domain.status === 'verified' && (
-                  <>
-                    <Separator />
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium">Senders</p>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setAddingSenderForDomain(
-                            addingSenderForDomain === domain.id ? null : domain.id
-                          )}
-                        >
-                          {addingSenderForDomain === domain.id ? 'Cancel' : 'Add Sender'}
-                        </Button>
-                      </div>
-
-                      {addingSenderForDomain === domain.id && (
-                        <div className="flex gap-3">
-                          <Input
-                            placeholder="sender@example.com"
-                            value={senderEmail}
-                            onChange={(e) => setSenderEmail(e.target.value)}
-                          />
-                          <Input
-                            placeholder="Display name (optional)"
-                            value={senderName}
-                            onChange={(e) => setSenderName(e.target.value)}
-                          />
-                          <Button
-                            onClick={() => handleAddSender(domain.id)}
-                            disabled={addSender.isPending || !senderEmail.trim()}
-                          >
-                            Add
-                          </Button>
-                        </div>
-                      )}
-
-                      {domainSenders.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">No senders for this domain.</p>
-                      ) : (
-                        domainSenders.map((sender) => (
-                          <div key={sender.id} className="flex items-center justify-between rounded-md border p-3">
-                            <div className="space-y-1">
-                              <span className="text-sm font-medium">{sender.email}</span>
-                              {sender.name && (
-                                <p className="text-xs text-muted-foreground">{sender.name}</p>
-                              )}
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-destructive hover:text-destructive"
-                              onClick={() => removeSender.mutate(sender.id)}
-                            >
-                              Delete
-                            </Button>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </>
-                )}
-              </CardContent>
-            </Card>
+                  )}
+                </div>
+              )}
+            </div>
           )
         })
       )}

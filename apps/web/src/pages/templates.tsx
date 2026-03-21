@@ -1,11 +1,8 @@
 import { useState } from 'react'
 import { useTemplates, useTemplate, useUpdateTemplate } from '../hooks/use-templates'
 import { Button } from '../components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
-import { Badge } from '../components/ui/badge'
-import { Separator } from '../components/ui/separator'
 
 export function TemplatesPage() {
   const { templates, isLoading, create, remove } = useTemplates()
@@ -47,64 +44,75 @@ export function TemplatesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Page header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Templates</h1>
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Templates</h1>
+          <p className="text-[13px] text-muted-foreground mt-1">
+            Create and manage email templates with versioning
+          </p>
+        </div>
         <Button onClick={() => setShowCreate(!showCreate)}>
           {showCreate ? 'Cancel' : 'New Template'}
         </Button>
       </div>
 
+      {/* Create form */}
       {showCreate && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Create Template</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <div className="glass-card rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-5">
+            <div className="w-2 h-2 rounded-full bg-gradient-to-r from-[hsl(250,90%,65%)] to-[hsl(200,80%,55%)]" />
+            <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Create Template</span>
+          </div>
+          <div className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="tpl-name">Name</Label>
+                <Label htmlFor="tpl-name" className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Name</Label>
                 <Input
                   id="tpl-name"
                   placeholder="e.g., Welcome Email"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  className="bg-secondary/50 border-border/50 focus:border-[hsl(250,90%,65%/0.5)] focus:ring-1 focus:ring-[hsl(250,90%,65%/0.2)]"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="tpl-desc">Description</Label>
+                <Label htmlFor="tpl-desc" className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Description</Label>
                 <Input
                   id="tpl-desc"
                   placeholder="Optional description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
+                  className="bg-secondary/50 border-border/50 focus:border-[hsl(250,90%,65%/0.5)] focus:ring-1 focus:ring-[hsl(250,90%,65%/0.2)]"
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="tpl-subject">Subject</Label>
+              <Label htmlFor="tpl-subject" className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Subject</Label>
               <Input
                 id="tpl-subject"
                 placeholder="Email subject line"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
+                className="bg-secondary/50 border-border/50 focus:border-[hsl(250,90%,65%/0.5)] focus:ring-1 focus:ring-[hsl(250,90%,65%/0.2)]"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="tpl-html">HTML Body</Label>
+              <Label htmlFor="tpl-html" className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">HTML Body</Label>
               <textarea
                 id="tpl-html"
-                className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex min-h-[120px] w-full rounded-lg border bg-secondary/50 border-border/50 px-3 py-2 text-[13px] placeholder:text-muted-foreground focus:border-[hsl(250,90%,65%/0.5)] focus:ring-1 focus:ring-[hsl(250,90%,65%/0.2)] focus:outline-none"
                 placeholder="<html>...</html>"
                 value={htmlBody}
                 onChange={(e) => setHtmlBody(e.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="tpl-text">Text Body</Label>
+              <Label htmlFor="tpl-text" className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Text Body</Label>
               <textarea
                 id="tpl-text"
-                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex min-h-[80px] w-full rounded-lg border bg-secondary/50 border-border/50 px-3 py-2 text-[13px] placeholder:text-muted-foreground focus:border-[hsl(250,90%,65%/0.5)] focus:ring-1 focus:ring-[hsl(250,90%,65%/0.2)] focus:outline-none"
                 placeholder="Plain text version..."
                 value={textBody}
                 onChange={(e) => setTextBody(e.target.value)}
@@ -113,52 +121,50 @@ export function TemplatesPage() {
             <Button onClick={handleCreate} disabled={create.isPending || !name.trim() || !subject.trim()}>
               Create Template
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
+      {/* Template list */}
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading...</p>
+        <p className="text-[13px] text-muted-foreground">Loading...</p>
       ) : templates.length === 0 ? (
-        <Card>
-          <CardContent className="py-8">
-            <p className="text-sm text-muted-foreground text-center">
-              No templates yet. Create one to get started.
-            </p>
-          </CardContent>
-        </Card>
+        <div className="glass-card rounded-xl p-12 text-center">
+          <p className="text-muted-foreground text-[13px]">No templates yet.</p>
+          <p className="text-muted-foreground/60 text-[12px] mt-1">Create one to get started.</p>
+        </div>
       ) : (
-        <div className="space-y-3">
-          {templates.map((tpl) => (
-            <Card
-              key={tpl.id}
-              className="cursor-pointer hover:bg-accent/30 transition-colors"
-              onClick={() => setSelectedId(tpl.id)}
-            >
-              <CardContent className="flex items-center justify-between py-4">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">{tpl.name}</p>
+        <div className="glass-card rounded-xl p-5">
+          <div className="divide-y divide-border/30">
+            {templates.map((tpl) => (
+              <div
+                key={tpl.id}
+                className="stagger-item flex items-center justify-between py-3 px-1 cursor-pointer hover:bg-secondary/30 rounded-lg transition-colors"
+                onClick={() => setSelectedId(tpl.id)}
+              >
+                <div className="space-y-0.5">
+                  <p className="text-[13px] font-medium">{tpl.name}</p>
                   {tpl.description && (
-                    <p className="text-xs text-muted-foreground">{tpl.description}</p>
+                    <p className="text-[12px] text-muted-foreground">{tpl.description}</p>
                   )}
                 </div>
                 <div className="flex items-center gap-3">
-                  <Badge variant="secondary" className="text-xs">v{tpl.currentVersion}</Badge>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-destructive hover:text-destructive"
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[hsl(250,90%,65%)]/10 text-[hsl(250,90%,70%)] border border-[hsl(250,90%,65%)]/20">
+                    v{tpl.currentVersion}
+                  </span>
+                  <button
+                    className="text-[11px] text-red-400 hover:text-red-300 transition-colors"
                     onClick={(e) => {
                       e.stopPropagation()
                       remove.mutate(tpl.id)
                     }}
                   >
                     Delete
-                  </Button>
+                  </button>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -197,62 +203,73 @@ function TemplateDetail({ templateId, onBack }: { templateId: string; onBack: ()
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <Button variant="ghost" onClick={onBack}>Back to templates</Button>
-        <p className="text-sm text-muted-foreground">Loading...</p>
+      <div className="space-y-8">
+        <button onClick={onBack} className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
+          Back to templates
+        </button>
+        <p className="text-[13px] text-muted-foreground">Loading...</p>
       </div>
     )
   }
 
   if (!template) {
     return (
-      <div className="space-y-6">
-        <Button variant="ghost" onClick={onBack}>Back to templates</Button>
-        <p className="text-sm text-muted-foreground">Template not found.</p>
+      <div className="space-y-8">
+        <button onClick={onBack} className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
+          Back to templates
+        </button>
+        <p className="text-[13px] text-muted-foreground">Template not found.</p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Header */}
       <div className="flex items-center gap-3">
-        <Button variant="ghost" onClick={onBack}>Back</Button>
+        <button onClick={onBack} className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
+          Back
+        </button>
         <h1 className="text-2xl font-semibold tracking-tight">{template.name}</h1>
-        <Badge variant="secondary">v{template.currentVersion}</Badge>
+        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[hsl(250,90%,65%)]/10 text-[hsl(250,90%,70%)] border border-[hsl(250,90%,65%)]/20">
+          v{template.currentVersion}
+        </span>
       </div>
 
       {template.description && (
-        <p className="text-sm text-muted-foreground">{template.description}</p>
+        <p className="text-[13px] text-muted-foreground">{template.description}</p>
       )}
 
       {editing ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">New Version</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <div className="glass-card rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-5">
+            <div className="w-2 h-2 rounded-full bg-gradient-to-r from-amber-500 to-orange-400" />
+            <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">New Version</span>
+          </div>
+          <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-subject">Subject</Label>
+              <Label htmlFor="edit-subject" className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Subject</Label>
               <Input
                 id="edit-subject"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
+                className="bg-secondary/50 border-border/50 focus:border-[hsl(250,90%,65%/0.5)] focus:ring-1 focus:ring-[hsl(250,90%,65%/0.2)]"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-html">HTML Body</Label>
+              <Label htmlFor="edit-html" className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">HTML Body</Label>
               <textarea
                 id="edit-html"
-                className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex min-h-[120px] w-full rounded-lg border bg-secondary/50 border-border/50 px-3 py-2 text-[13px] placeholder:text-muted-foreground focus:border-[hsl(250,90%,65%/0.5)] focus:ring-1 focus:ring-[hsl(250,90%,65%/0.2)] focus:outline-none"
                 value={htmlBody}
                 onChange={(e) => setHtmlBody(e.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-text">Text Body</Label>
+              <Label htmlFor="edit-text" className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Text Body</Label>
               <textarea
                 id="edit-text"
-                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex min-h-[80px] w-full rounded-lg border bg-secondary/50 border-border/50 px-3 py-2 text-[13px] placeholder:text-muted-foreground focus:border-[hsl(250,90%,65%/0.5)] focus:ring-1 focus:ring-[hsl(250,90%,65%/0.2)] focus:outline-none"
                 value={textBody}
                 onChange={(e) => setTextBody(e.target.value)}
               />
@@ -261,70 +278,78 @@ function TemplateDetail({ templateId, onBack }: { templateId: string; onBack: ()
               <Button onClick={handleUpdate} disabled={update.isPending || !subject.trim()}>
                 Save New Version
               </Button>
-              <Button variant="outline" onClick={() => setEditing(false)}>Cancel</Button>
+              <button
+                className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors"
+                onClick={() => setEditing(false)}
+              >
+                Cancel
+              </button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ) : (
-        <>
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base">Current Version</CardTitle>
-                <Button variant="outline" size="sm" onClick={startEdit}>
-                  Edit / New Version
-                </Button>
+        <div className="glass-card rounded-xl p-5">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400" />
+              <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Current Version</span>
+            </div>
+            <button
+              className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors"
+              onClick={startEdit}
+            >
+              Edit / New Version
+            </button>
+          </div>
+
+          {template.version ? (
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Subject</span>
+                <p className="text-[13px]">{template.version.subject}</p>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {template.version ? (
+              {template.version.htmlBody && (
                 <>
+                  <div className="border-t border-border/30" />
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Subject</p>
-                    <p className="text-sm">{template.version.subject}</p>
+                    <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">HTML Body</span>
+                    <pre className="rounded-lg bg-secondary/30 border border-border/30 p-3 font-mono text-[12px] overflow-auto max-h-64">
+                      {template.version.htmlBody}
+                    </pre>
                   </div>
-                  {template.version.htmlBody && (
-                    <>
-                      <Separator />
-                      <div className="space-y-1">
-                        <p className="text-xs font-medium text-muted-foreground">HTML Body</p>
-                        <pre className="rounded-md border bg-muted/50 p-3 text-xs overflow-auto max-h-64">
-                          {template.version.htmlBody}
-                        </pre>
-                      </div>
-                    </>
-                  )}
-                  {template.version.textBody && (
-                    <>
-                      <Separator />
-                      <div className="space-y-1">
-                        <p className="text-xs font-medium text-muted-foreground">Text Body</p>
-                        <pre className="rounded-md border bg-muted/50 p-3 text-xs overflow-auto max-h-64">
-                          {template.version.textBody}
-                        </pre>
-                      </div>
-                    </>
-                  )}
-                  {template.version.variables && template.version.variables.length > 0 && (
-                    <>
-                      <Separator />
-                      <div className="space-y-1">
-                        <p className="text-xs font-medium text-muted-foreground">Variables</p>
-                        <div className="flex gap-2 flex-wrap">
-                          {template.version.variables.map((v) => (
-                            <Badge key={v} variant="secondary" className="text-xs">{`{{${v}}}`}</Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  )}
                 </>
-              ) : (
-                <p className="text-sm text-muted-foreground">No version content available.</p>
               )}
-            </CardContent>
-          </Card>
-        </>
+              {template.version.textBody && (
+                <>
+                  <div className="border-t border-border/30" />
+                  <div className="space-y-1">
+                    <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Text Body</span>
+                    <pre className="rounded-lg bg-secondary/30 border border-border/30 p-3 font-mono text-[12px] overflow-auto max-h-64">
+                      {template.version.textBody}
+                    </pre>
+                  </div>
+                </>
+              )}
+              {template.version.variables && template.version.variables.length > 0 && (
+                <>
+                  <div className="border-t border-border/30" />
+                  <div className="space-y-2">
+                    <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Variables</span>
+                    <div className="flex gap-2 flex-wrap">
+                      {template.version.variables.map((v) => (
+                        <span key={v} className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border/50 font-mono">
+                          {`{{${v}}}`}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          ) : (
+            <p className="text-[13px] text-muted-foreground">No version content available.</p>
+          )}
+        </div>
       )}
     </div>
   )

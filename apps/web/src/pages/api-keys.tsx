@@ -1,10 +1,8 @@
 import { useState } from 'react'
 import { useApiKeys } from '../hooks/use-api-keys'
 import { Button } from '../components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
-import { Badge } from '../components/ui/badge'
 
 export function ApiKeysPage() {
   const { keys, isLoading, create, revoke } = useApiKeys()
@@ -22,89 +20,102 @@ export function ApiKeysPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold tracking-tight">API Keys</h1>
+    <div className="space-y-8">
+      {/* Page header */}
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">API Keys</h1>
+        <p className="text-[13px] text-muted-foreground mt-1">
+          Manage API keys for programmatic access to your workspace
+        </p>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Create API Key</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex gap-3">
-            <div className="flex-1">
-              <Label htmlFor="key-name" className="sr-only">Key name</Label>
-              <Input
-                id="key-name"
-                placeholder="e.g., Production"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
-              />
-            </div>
-            <Button onClick={handleCreate} disabled={create.isPending || !name.trim()}>
-              Create
-            </Button>
+      {/* Create key */}
+      <div className="glass-card rounded-xl p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-2 h-2 rounded-full bg-gradient-to-r from-[hsl(250,90%,65%)] to-[hsl(200,80%,55%)]" />
+          <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Create API Key</span>
+        </div>
+        <div className="flex gap-3">
+          <div className="flex-1">
+            <Label htmlFor="key-name" className="sr-only">Key name</Label>
+            <Input
+              id="key-name"
+              placeholder="e.g., Production"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
+              className="bg-secondary/50 border-border/50 focus:border-[hsl(250,90%,65%/0.5)] focus:ring-1 focus:ring-[hsl(250,90%,65%/0.2)]"
+            />
           </div>
+          <Button onClick={handleCreate} disabled={create.isPending || !name.trim()}>
+            Create
+          </Button>
+        </div>
 
-          {newKey && (
-            <div className="rounded-md border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950">
-              <p className="mb-2 text-sm font-medium text-amber-800 dark:text-amber-200">
-                Copy this key now. It won't be shown again.
-              </p>
-              <code className="block break-all rounded bg-white p-2 text-sm dark:bg-black">
-                {newKey}
-              </code>
-              <Button
-                variant="outline"
-                size="sm"
-                className="mt-2"
-                onClick={() => navigator.clipboard.writeText(newKey)}
-              >
-                Copy to clipboard
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        {newKey && (
+          <div className="mt-4 rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
+            <p className="mb-2 text-[13px] font-medium text-amber-400">
+              Copy this key now. It won't be shown again.
+            </p>
+            <code className="block break-all rounded-lg bg-secondary/80 p-3 font-mono text-[12px] text-foreground">
+              {newKey}
+            </code>
+            <button
+              className="mt-3 text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors"
+              onClick={() => navigator.clipboard.writeText(newKey)}
+            >
+              Copy to clipboard
+            </button>
+          </div>
+        )}
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Active Keys</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading...</p>
-          ) : keys.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No API keys yet. Create one above.</p>
-          ) : (
-            <div className="space-y-3">
-              {keys.map((key) => (
-                <div key={key.id} className="flex items-center justify-between rounded-md border p-3">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm">{key.name}</span>
-                      <Badge variant={key.isRevoked ? 'destructive' : 'secondary'} className="text-xs">
-                        {key.isRevoked ? 'Revoked' : key.scope}
-                      </Badge>
-                    </div>
-                    <code className="text-xs text-muted-foreground">{key.keyPrefix}...</code>
+      {/* Active keys */}
+      <div className="glass-card rounded-xl p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-2 h-2 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400" />
+          <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Active Keys</span>
+        </div>
+
+        {isLoading ? (
+          <p className="text-[13px] text-muted-foreground">Loading...</p>
+        ) : keys.length === 0 ? (
+          <div className="py-8 text-center">
+            <p className="text-muted-foreground text-[13px]">No API keys yet.</p>
+            <p className="text-muted-foreground/60 text-[12px] mt-1">Create one above to get started.</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-border/30">
+            {keys.map((key) => (
+              <div key={key.id} className="stagger-item flex items-center justify-between py-3 px-1">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[13px] font-medium">{key.name}</span>
+                    {key.isRevoked ? (
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
+                        Revoked
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border/50">
+                        {key.scope}
+                      </span>
+                    )}
                   </div>
-                  {!key.isRevoked && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-destructive hover:text-destructive"
-                      onClick={() => revoke.mutate(key.id)}
-                    >
-                      Revoke
-                    </Button>
-                  )}
+                  <code className="font-mono text-[12px] text-muted-foreground">{key.keyPrefix}...</code>
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                {!key.isRevoked && (
+                  <button
+                    className="text-[11px] text-red-400 hover:text-red-300 transition-colors"
+                    onClick={() => revoke.mutate(key.id)}
+                  >
+                    Revoke
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

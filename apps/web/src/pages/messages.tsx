@@ -1,11 +1,51 @@
 import { useState } from 'react'
 import { useMessages, useMessage } from '../hooks/use-messages'
-import { Button } from '../components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
-import { Badge } from '../components/ui/badge'
-import { Separator } from '../components/ui/separator'
 
 const statuses = ['all', 'accepted', 'sent', 'delivered', 'bounced', 'complained', 'rejected'] as const
+
+function msgStatusBadge(status: string) {
+  if (status === 'bounced' || status === 'complained' || status === 'rejected') {
+    return (
+      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
+        {status}
+      </span>
+    )
+  }
+  if (status === 'delivered') {
+    return (
+      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+        {status}
+      </span>
+    )
+  }
+  return (
+    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border/50">
+      {status}
+    </span>
+  )
+}
+
+function eventBadge(eventType: string) {
+  if (eventType === 'bounce' || eventType === 'complaint') {
+    return (
+      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
+        {eventType}
+      </span>
+    )
+  }
+  if (eventType === 'delivery') {
+    return (
+      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+        {eventType}
+      </span>
+    )
+  }
+  return (
+    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border/50">
+      {eventType}
+    </span>
+  )
+}
 
 export function MessagesPage() {
   const [status, setStatus] = useState<string>('all')
@@ -22,85 +62,85 @@ export function MessagesPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Messages</h1>
+    <div className="space-y-8">
+      {/* Page header */}
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">Messages</h1>
+        <p className="text-[13px] text-muted-foreground mt-1">
+          View and filter sent messages and their delivery status
+        </p>
+      </div>
 
+      {/* Status filters */}
       <div className="flex gap-2 flex-wrap">
         {statuses.map((s) => (
-          <Button
+          <button
             key={s}
-            variant={status === s ? 'default' : 'outline'}
-            size="sm"
+            className={`text-[12px] font-medium px-3 py-1.5 rounded-lg transition-colors ${
+              status === s
+                ? 'bg-[hsl(250,90%,65%)]/15 text-[hsl(250,90%,70%)] border border-[hsl(250,90%,65%)]/30'
+                : 'bg-secondary hover:bg-secondary/80 border border-transparent'
+            }`}
             onClick={() => {
               setStatus(s)
               setPage(1)
             }}
           >
             {s.charAt(0).toUpperCase() + s.slice(1)}
-          </Button>
+          </button>
         ))}
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          {isLoading ? (
-            <p className="text-sm text-muted-foreground p-6">Loading...</p>
-          ) : !messages || messages.data.length === 0 ? (
-            <p className="text-sm text-muted-foreground p-6 text-center">
-              No messages found. Messages appear here after you send emails via the API.
-            </p>
-          ) : (
-            <div className="divide-y">
-              {messages.data.map((msg) => (
-                <div
-                  key={msg.id}
-                  className="flex items-center justify-between p-4 cursor-pointer hover:bg-accent/30 transition-colors"
-                  onClick={() => setSelectedId(msg.id)}
-                >
-                  <div className="space-y-1 min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium truncate">{msg.subject}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      To: {msg.toEmail} | {new Date(msg.createdAt).toLocaleString()}
-                    </p>
-                  </div>
-                  <Badge
-                    variant={msg.status === 'bounced' || msg.status === 'complained' || msg.status === 'rejected' ? 'destructive' : 'secondary'}
-                    className="text-xs ml-3 shrink-0"
-                  >
-                    {msg.status}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {messages && messages.pages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Page {messages.page} of {messages.pages} ({messages.total} total)
-          </p>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => p - 1)}
-              disabled={page <= 1}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => p + 1)}
-              disabled={page >= messages.pages}
-            >
-              Next
-            </Button>
+      {/* Message list */}
+      <div className="glass-card rounded-xl p-5">
+        {isLoading ? (
+          <p className="text-[13px] text-muted-foreground">Loading...</p>
+        ) : !messages || messages.data.length === 0 ? (
+          <div className="py-8 text-center">
+            <p className="text-muted-foreground text-[13px]">No messages found.</p>
+            <p className="text-muted-foreground/60 text-[12px] mt-1">Messages appear here after you send emails via the API.</p>
           </div>
+        ) : (
+          <div className="divide-y divide-border/30">
+            {messages.data.map((msg) => (
+              <div
+                key={msg.id}
+                className="stagger-item flex items-center justify-between py-3 px-1 cursor-pointer hover:bg-secondary/30 rounded-lg transition-colors"
+                onClick={() => setSelectedId(msg.id)}
+              >
+                <div className="space-y-1 min-w-0 flex-1">
+                  <p className="text-[13px] font-medium truncate">{msg.subject}</p>
+                  <p className="text-[12px] text-muted-foreground">
+                    To: {msg.toEmail} | {new Date(msg.createdAt).toLocaleString()}
+                  </p>
+                </div>
+                <div className="ml-3 shrink-0">
+                  {msgStatusBadge(msg.status)}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Pagination */}
+      {messages && messages.pages > 1 && (
+        <div className="flex items-center justify-center gap-4 text-[13px] text-muted-foreground">
+          <button
+            className="hover:text-foreground transition-colors disabled:opacity-40"
+            onClick={() => setPage((p) => p - 1)}
+            disabled={page <= 1}
+          >
+            &larr; Previous
+          </button>
+          <span>Page {messages.page} of {messages.pages}</span>
+          <button
+            className="hover:text-foreground transition-colors disabled:opacity-40"
+            onClick={() => setPage((p) => p + 1)}
+            disabled={page >= messages.pages}
+          >
+            Next &rarr;
+          </button>
         </div>
       )}
     </div>
@@ -112,103 +152,102 @@ function MessageDetail({ messageId, onBack }: { messageId: string; onBack: () =>
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <Button variant="ghost" onClick={onBack}>Back to messages</Button>
-        <p className="text-sm text-muted-foreground">Loading...</p>
+      <div className="space-y-8">
+        <button onClick={onBack} className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
+          Back to messages
+        </button>
+        <p className="text-[13px] text-muted-foreground">Loading...</p>
       </div>
     )
   }
 
   if (!message) {
     return (
-      <div className="space-y-6">
-        <Button variant="ghost" onClick={onBack}>Back to messages</Button>
-        <p className="text-sm text-muted-foreground">Message not found.</p>
+      <div className="space-y-8">
+        <button onClick={onBack} className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
+          Back to messages
+        </button>
+        <p className="text-[13px] text-muted-foreground">Message not found.</p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Header */}
       <div className="flex items-center gap-3">
-        <Button variant="ghost" onClick={onBack}>Back</Button>
+        <button onClick={onBack} className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
+          Back
+        </button>
         <h1 className="text-2xl font-semibold tracking-tight">{message.subject}</h1>
-        <Badge
-          variant={message.status === 'bounced' || message.status === 'complained' || message.status === 'rejected' ? 'destructive' : 'secondary'}
-        >
-          {message.status}
-        </Badge>
+        {msgStatusBadge(message.status)}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Details</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="grid gap-3 md:grid-cols-2">
-            <div>
-              <p className="text-xs font-medium text-muted-foreground">From</p>
-              <p className="text-sm">{message.fromEmail}</p>
-            </div>
-            <div>
-              <p className="text-xs font-medium text-muted-foreground">To</p>
-              <p className="text-sm">{message.toEmail}</p>
-            </div>
-            <div>
-              <p className="text-xs font-medium text-muted-foreground">Created</p>
-              <p className="text-sm">{new Date(message.createdAt).toLocaleString()}</p>
-            </div>
-            {message.sesMessageId && (
-              <div>
-                <p className="text-xs font-medium text-muted-foreground">SES Message ID</p>
-                <p className="text-sm font-mono text-xs break-all">{message.sesMessageId}</p>
-              </div>
-            )}
+      {/* Details */}
+      <div className="glass-card rounded-xl p-5">
+        <div className="flex items-center gap-2 mb-5">
+          <div className="w-2 h-2 rounded-full bg-gradient-to-r from-[hsl(250,90%,65%)] to-[hsl(200,80%,55%)]" />
+          <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Details</span>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">From</span>
+            <p className="text-[13px] mt-1">{message.fromEmail}</p>
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Event Timeline</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {!message.events || message.events.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No events recorded yet.</p>
-          ) : (
-            <div className="space-y-0">
-              {message.events.map((event, i) => (
-                <div key={event.id} className="flex gap-4 pb-4 last:pb-0">
-                  <div className="flex flex-col items-center">
-                    <div className="w-2 h-2 rounded-full bg-foreground mt-2" />
-                    {i < message.events.length - 1 && (
-                      <div className="w-px flex-1 bg-border mt-1" />
-                    )}
-                  </div>
-                  <div className="space-y-1 pb-2">
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        variant={event.eventType === 'bounce' || event.eventType === 'complaint' ? 'destructive' : 'secondary'}
-                        className="text-xs"
-                      >
-                        {event.eventType}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(event.createdAt).toLocaleString()}
-                      </span>
-                    </div>
-                    {event.bounceType && (
-                      <p className="text-xs text-muted-foreground">
-                        Bounce: {event.bounceType}{event.bounceSubtype ? ` / ${event.bounceSubtype}` : ''}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
+          <div>
+            <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">To</span>
+            <p className="text-[13px] mt-1">{message.toEmail}</p>
+          </div>
+          <div>
+            <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Created</span>
+            <p className="text-[13px] mt-1">{new Date(message.createdAt).toLocaleString()}</p>
+          </div>
+          {message.sesMessageId && (
+            <div>
+              <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">SES Message ID</span>
+              <p className="font-mono text-[12px] mt-1 break-all text-muted-foreground">{message.sesMessageId}</p>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+
+      {/* Event timeline */}
+      <div className="glass-card rounded-xl p-5">
+        <div className="flex items-center gap-2 mb-5">
+          <div className="w-2 h-2 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400" />
+          <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Event Timeline</span>
+        </div>
+
+        {!message.events || message.events.length === 0 ? (
+          <p className="text-[13px] text-muted-foreground">No events recorded yet.</p>
+        ) : (
+          <div className="space-y-0">
+            {message.events.map((event, i) => (
+              <div key={event.id} className="stagger-item flex gap-4 pb-4 last:pb-0">
+                <div className="flex flex-col items-center">
+                  <div className="w-2 h-2 rounded-full bg-gradient-to-r from-[hsl(250,90%,65%)] to-[hsl(200,80%,55%)] mt-2" />
+                  {i < message.events.length - 1 && (
+                    <div className="w-px flex-1 bg-border/30 mt-1" />
+                  )}
+                </div>
+                <div className="space-y-1 pb-2">
+                  <div className="flex items-center gap-2">
+                    {eventBadge(event.eventType)}
+                    <span className="text-[12px] text-muted-foreground">
+                      {new Date(event.createdAt).toLocaleString()}
+                    </span>
+                  </div>
+                  {event.bounceType && (
+                    <p className="text-[12px] text-muted-foreground">
+                      Bounce: {event.bounceType}{event.bounceSubtype ? ` / ${event.bounceSubtype}` : ''}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
