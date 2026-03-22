@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { useContacts, useContact, useContactMessages } from '../hooks/use-contacts'
 import { Input } from '../components/ui/input'
+import { ListSkeleton, CardSkeleton } from '../components/ui/skeleton'
+import { EmptyState } from '../components/ui/empty-state'
+import { Users } from 'lucide-react'
 
 function contactStatusBadge(status: string) {
   if (status === 'suppressed') {
@@ -67,19 +70,16 @@ export function ContactsPage() {
       </div>
 
       {/* Contact list */}
-      <div className="glass-card rounded-xl p-5">
-        {isLoading ? (
-          <p className="text-[13px] text-muted-foreground">Loading...</p>
-        ) : !contacts || contacts.data.length === 0 ? (
-          <div className="py-8 text-center">
-            <p className="text-muted-foreground text-[13px]">
-              {search ? 'No contacts matching your search.' : 'No contacts yet.'}
-            </p>
-            {!search && (
-              <p className="text-muted-foreground/60 text-[12px] mt-1">Contacts are created automatically when you send emails.</p>
-            )}
-          </div>
-        ) : (
+      {isLoading ? (
+        <ListSkeleton />
+      ) : !contacts || contacts.data.length === 0 ? (
+        <EmptyState
+          icon={Users}
+          title={search ? 'No contacts matching your search' : 'No contacts yet'}
+          description={search ? 'Try a different search term.' : 'Contacts are created automatically when you send emails.'}
+        />
+      ) : (
+        <div className="glass-card rounded-xl p-5">
           <div className="divide-y divide-border/30">
             {contacts.data.map((contact) => (
               <div
@@ -100,8 +100,8 @@ export function ContactsPage() {
               </div>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Pagination */}
       {contacts && contacts.pages > 1 && (
@@ -138,7 +138,13 @@ function ContactDetail({ contactId, onBack }: { contactId: string; onBack: () =>
         <button onClick={onBack} className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
           Back to contacts
         </button>
-        <p className="text-[13px] text-muted-foreground">Loading...</p>
+        <div className="grid gap-4 md:grid-cols-4">
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
+        </div>
+        <ListSkeleton />
       </div>
     )
   }
@@ -175,7 +181,7 @@ function ContactDetail({ contactId, onBack }: { contactId: string; onBack: () =>
       {/* Stat cards */}
       <div className="grid gap-4 md:grid-cols-4">
         {stats.map((stat) => (
-          <div key={stat.label} className="glass-card rounded-xl p-5">
+          <div key={stat.label} className="glass-card rounded-xl p-5 card-lift">
             <div className="flex items-center gap-2 mb-3">
               <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${stat.color}`} />
               <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">{stat.label}</span>
@@ -193,7 +199,7 @@ function ContactDetail({ contactId, onBack }: { contactId: string; onBack: () =>
         </div>
 
         {msgsLoading ? (
-          <p className="text-[13px] text-muted-foreground">Loading...</p>
+          <ListSkeleton rows={3} />
         ) : !messages || messages.data.length === 0 ? (
           <p className="text-[13px] text-muted-foreground">No messages found.</p>
         ) : (

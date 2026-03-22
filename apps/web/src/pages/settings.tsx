@@ -4,6 +4,7 @@ import { useTenants } from '../hooks/use-tenants'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
+import { toast } from 'sonner'
 
 export function SettingsPage() {
   const { activeTenant } = useSession()
@@ -16,7 +17,9 @@ export function SettingsPage() {
 
   const handleSave = () => {
     if (!name.trim()) return
-    update.mutate({ name: name.trim() })
+    update.mutate({ name: name.trim() }, {
+      onSuccess: () => toast.success('Workspace updated'),
+    })
   }
 
   if (!activeTenant) return null
@@ -50,7 +53,7 @@ export function SettingsPage() {
                 onChange={(e) => setName(e.target.value)}
                 className="bg-secondary/50 border-border/50 focus:border-[hsl(250,90%,65%/0.5)] focus:ring-1 focus:ring-[hsl(250,90%,65%/0.2)]"
               />
-              <Button onClick={handleSave} disabled={update.isPending}>
+              <Button className="press-effect" onClick={handleSave} disabled={update.isPending}>
                 Save
               </Button>
             </div>

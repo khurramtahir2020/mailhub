@@ -3,6 +3,10 @@ import { useApiKeys } from '../hooks/use-api-keys'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
+import { toast } from 'sonner'
+import { ListSkeleton } from '../components/ui/skeleton'
+import { EmptyState } from '../components/ui/empty-state'
+import { Key } from 'lucide-react'
 
 export function ApiKeysPage() {
   const { keys, isLoading, create, revoke } = useApiKeys()
@@ -15,6 +19,7 @@ export function ApiKeysPage() {
       onSuccess: (data) => {
         setNewKey(data.key)
         setName('')
+        toast.success('API key created')
       },
     })
   }
@@ -47,7 +52,7 @@ export function ApiKeysPage() {
               className="bg-secondary/50 border-border/50 focus:border-[hsl(250,90%,65%/0.5)] focus:ring-1 focus:ring-[hsl(250,90%,65%/0.2)]"
             />
           </div>
-          <Button onClick={handleCreate} disabled={create.isPending || !name.trim()}>
+          <Button className="press-effect" onClick={handleCreate} disabled={create.isPending || !name.trim()}>
             Create
           </Button>
         </div>
@@ -61,8 +66,11 @@ export function ApiKeysPage() {
               {newKey}
             </code>
             <button
-              className="mt-3 text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors"
-              onClick={() => navigator.clipboard.writeText(newKey)}
+              className="mt-3 text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors press-effect"
+              onClick={() => {
+                navigator.clipboard.writeText(newKey)
+                toast('Key copied to clipboard')
+              }}
             >
               Copy to clipboard
             </button>
@@ -71,20 +79,21 @@ export function ApiKeysPage() {
       </div>
 
       {/* Active keys */}
-      <div className="glass-card rounded-xl p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-2 h-2 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400" />
-          <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Active Keys</span>
-        </div>
-
-        {isLoading ? (
-          <p className="text-[13px] text-muted-foreground">Loading...</p>
-        ) : keys.length === 0 ? (
-          <div className="py-8 text-center">
-            <p className="text-muted-foreground text-[13px]">No API keys yet.</p>
-            <p className="text-muted-foreground/60 text-[12px] mt-1">Create one above to get started.</p>
+      {isLoading ? (
+        <ListSkeleton />
+      ) : keys.length === 0 ? (
+        <EmptyState
+          icon={Key}
+          title="No API keys yet"
+          description="Create an API key above to start making programmatic requests to your workspace."
+        />
+      ) : (
+        <div className="glass-card rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-2 h-2 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400" />
+            <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Active Keys</span>
           </div>
-        ) : (
+
           <div className="divide-y divide-border/30">
             {keys.map((key) => (
               <div key={key.id} className="stagger-item flex items-center justify-between py-3 px-1">
@@ -106,7 +115,9 @@ export function ApiKeysPage() {
                 {!key.isRevoked && (
                   <button
                     className="text-[11px] text-red-600 hover:text-red-500 transition-colors"
-                    onClick={() => revoke.mutate(key.id)}
+                    onClick={() => revoke.mutate(key.id, {
+                      onSuccess: () => toast.success('API key revoked'),
+                    })}
                   >
                     Revoke
                   </button>
@@ -114,8 +125,8 @@ export function ApiKeysPage() {
               </div>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

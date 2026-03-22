@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { Auth0Provider } from '@auth0/auth0-react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter } from 'react-router'
+import { Toaster } from 'sonner'
 import { App } from './App'
 import './index.css'
 
@@ -28,6 +29,17 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <App />
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              style: {
+                background: 'white',
+                border: '1px solid hsl(220 13% 91%)',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                fontSize: '13px',
+              },
+            }}
+          />
         </BrowserRouter>
       </QueryClientProvider>
     </Auth0Provider>

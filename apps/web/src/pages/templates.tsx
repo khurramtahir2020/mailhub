@@ -3,6 +3,10 @@ import { useTemplates, useTemplate, useUpdateTemplate } from '../hooks/use-templ
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
+import { toast } from 'sonner'
+import { ListSkeleton } from '../components/ui/skeleton'
+import { EmptyState } from '../components/ui/empty-state'
+import { FileText } from 'lucide-react'
 
 export function TemplatesPage() {
   const { templates, isLoading, create, remove } = useTemplates()
@@ -34,6 +38,7 @@ export function TemplatesPage() {
           setHtmlBody('')
           setTextBody('')
           setShowCreate(false)
+          toast.success('Template created')
         },
       }
     )
@@ -53,7 +58,7 @@ export function TemplatesPage() {
             Create and manage email templates with versioning
           </p>
         </div>
-        <Button onClick={() => setShowCreate(!showCreate)}>
+        <Button className="press-effect" onClick={() => setShowCreate(!showCreate)}>
           {showCreate ? 'Cancel' : 'New Template'}
         </Button>
       </div>
@@ -118,7 +123,7 @@ export function TemplatesPage() {
                 onChange={(e) => setTextBody(e.target.value)}
               />
             </div>
-            <Button onClick={handleCreate} disabled={create.isPending || !name.trim() || !subject.trim()}>
+            <Button className="press-effect" onClick={handleCreate} disabled={create.isPending || !name.trim() || !subject.trim()}>
               Create Template
             </Button>
           </div>
@@ -127,12 +132,13 @@ export function TemplatesPage() {
 
       {/* Template list */}
       {isLoading ? (
-        <p className="text-[13px] text-muted-foreground">Loading...</p>
+        <ListSkeleton />
       ) : templates.length === 0 ? (
-        <div className="glass-card rounded-xl p-12 text-center">
-          <p className="text-muted-foreground text-[13px]">No templates yet.</p>
-          <p className="text-muted-foreground/60 text-[12px] mt-1">Create one to get started.</p>
-        </div>
+        <EmptyState
+          icon={FileText}
+          title="No templates yet"
+          description="Create a template to get started with reusable email content."
+        />
       ) : (
         <div className="glass-card rounded-xl p-5">
           <div className="divide-y divide-border/30">
@@ -156,7 +162,9 @@ export function TemplatesPage() {
                     className="text-[11px] text-red-600 hover:text-red-500 transition-colors"
                     onClick={(e) => {
                       e.stopPropagation()
-                      remove.mutate(tpl.id)
+                      remove.mutate(tpl.id, {
+                        onSuccess: () => toast.success('Template deleted'),
+                      })
                     }}
                   >
                     Delete
@@ -196,7 +204,10 @@ function TemplateDetail({ templateId, onBack }: { templateId: string; onBack: ()
         text_body: textBody.trim() || undefined,
       },
       {
-        onSuccess: () => setEditing(false),
+        onSuccess: () => {
+          setEditing(false)
+          toast.success('Template updated')
+        },
       }
     )
   }
@@ -207,7 +218,7 @@ function TemplateDetail({ templateId, onBack }: { templateId: string; onBack: ()
         <button onClick={onBack} className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
           Back to templates
         </button>
-        <p className="text-[13px] text-muted-foreground">Loading...</p>
+        <ListSkeleton rows={3} />
       </div>
     )
   }
@@ -275,7 +286,7 @@ function TemplateDetail({ templateId, onBack }: { templateId: string; onBack: ()
               />
             </div>
             <div className="flex gap-2">
-              <Button onClick={handleUpdate} disabled={update.isPending || !subject.trim()}>
+              <Button className="press-effect" onClick={handleUpdate} disabled={update.isPending || !subject.trim()}>
                 Save New Version
               </Button>
               <button

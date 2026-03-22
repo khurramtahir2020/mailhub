@@ -1,5 +1,6 @@
 import { useSession } from '../hooks/use-session'
 import { useUsageSummary } from '../hooks/use-usage'
+import { CardSkeleton } from '../components/ui/skeleton'
 
 export function DashboardPage() {
   const { activeTenant } = useSession()
@@ -15,25 +16,25 @@ export function DashboardPage() {
   const stats = [
     {
       label: 'Emails Sent',
-      value: isLoading ? '...' : sent.toLocaleString(),
+      value: sent.toLocaleString(),
       sub: 'This month',
       color: 'from-[hsl(250,90%,65%)] to-[hsl(200,80%,55%)]',
     },
     {
       label: 'Delivered',
-      value: isLoading ? '...' : delivered.toLocaleString(),
+      value: delivered.toLocaleString(),
       sub: deliveryRate === '--' ? 'No data' : `${deliveryRate}% rate`,
       color: 'from-emerald-500 to-emerald-400',
     },
     {
       label: 'Bounced',
-      value: isLoading ? '...' : bounced.toLocaleString(),
+      value: bounced.toLocaleString(),
       sub: bounceRate === '--' ? 'No data' : `${bounceRate}% rate`,
       color: 'from-amber-500 to-orange-400',
     },
     {
       label: 'Complaints',
-      value: isLoading ? '...' : complained.toLocaleString(),
+      value: complained.toLocaleString(),
       sub: 'Keep below 0.1%',
       color: 'from-red-500 to-rose-400',
     },
@@ -50,27 +51,36 @@ export function DashboardPage() {
       </div>
 
       {/* Stats grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, i) => (
-          <div
-            key={stat.label}
-            className="stagger-item glass-card rounded-xl p-5 transition-all duration-200 hover:translate-y-[-2px]"
-          >
-            <div className="flex items-center gap-2 mb-3">
-              <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${stat.color}`} />
-              <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">
-                {stat.label}
-              </span>
+      {isLoading ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className="stagger-item glass-card rounded-xl p-5 card-lift"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${stat.color}`} />
+                <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">
+                  {stat.label}
+                </span>
+              </div>
+              <p className="text-3xl font-bold tracking-tight">{stat.value}</p>
+              <p className="text-[12px] text-muted-foreground mt-1">{stat.sub}</p>
             </div>
-            <p className="text-3xl font-bold tracking-tight">{stat.value}</p>
-            <p className="text-[12px] text-muted-foreground mt-1">{stat.sub}</p>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Mode & limits */}
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="glass-card rounded-xl p-5">
+        <div className="glass-card rounded-xl p-5 card-lift">
           <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">
             Account Mode
           </span>
@@ -87,26 +97,26 @@ export function DashboardPage() {
             )}
           </div>
         </div>
-        <div className="glass-card rounded-xl p-5">
+        <div className="glass-card rounded-xl p-5 card-lift">
           <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">
             Quick Actions
           </span>
           <div className="flex gap-2 mt-3">
             <a
               href="/domains"
-              className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 text-foreground transition-colors"
+              className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 text-foreground transition-colors press-effect"
             >
               Add Domain
             </a>
             <a
               href="/api-keys"
-              className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 text-foreground transition-colors"
+              className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 text-foreground transition-colors press-effect"
             >
               Create API Key
             </a>
             <a
               href="/templates"
-              className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 text-foreground transition-colors"
+              className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 text-foreground transition-colors press-effect"
             >
               New Template
             </a>

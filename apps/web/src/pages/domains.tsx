@@ -4,6 +4,10 @@ import { useSenders } from '../hooks/use-senders'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
+import { toast } from 'sonner'
+import { ListSkeleton } from '../components/ui/skeleton'
+import { EmptyState } from '../components/ui/empty-state'
+import { Globe } from 'lucide-react'
 import type { Domain } from '@mailhub/shared'
 
 function statusBadge(status: Domain['status']) {
@@ -49,7 +53,10 @@ export function DomainsPage() {
   const handleAddDomain = () => {
     if (!domainInput.trim()) return
     add.mutate(domainInput.trim(), {
-      onSuccess: () => setDomainInput(''),
+      onSuccess: () => {
+        setDomainInput('')
+        toast.success('Domain added')
+      },
     })
   }
 
@@ -62,6 +69,7 @@ export function DomainsPage() {
           setSenderEmail('')
           setSenderName('')
           setAddingSenderForDomain(null)
+          toast.success('Sender added')
         },
       }
     )
@@ -95,7 +103,7 @@ export function DomainsPage() {
               className="bg-secondary/50 border-border/50 focus:border-[hsl(250,90%,65%/0.5)] focus:ring-1 focus:ring-[hsl(250,90%,65%/0.2)]"
             />
           </div>
-          <Button onClick={handleAddDomain} disabled={add.isPending || !domainInput.trim()}>
+          <Button className="press-effect" onClick={handleAddDomain} disabled={add.isPending || !domainInput.trim()}>
             Add Domain
           </Button>
         </div>
@@ -103,12 +111,13 @@ export function DomainsPage() {
 
       {/* Domain list */}
       {isLoading ? (
-        <p className="text-[13px] text-muted-foreground">Loading...</p>
+        <ListSkeleton />
       ) : domains.length === 0 ? (
-        <div className="glass-card rounded-xl p-12 text-center">
-          <p className="text-muted-foreground text-[13px]">No domains yet.</p>
-          <p className="text-muted-foreground/60 text-[12px] mt-1">Add a domain above to start sending emails.</p>
-        </div>
+        <EmptyState
+          icon={Globe}
+          title="No domains yet"
+          description="Add a sending domain to start delivering emails."
+        />
       ) : (
         domains.map((domain) => {
           const domainSenders = senders.filter((s) => s.domainId === domain.id)
@@ -130,7 +139,7 @@ export function DomainsPage() {
           }
 
           return (
-            <div key={domain.id} className="glass-card rounded-xl p-5 transition-all duration-200 hover:translate-y-[-2px]">
+            <div key={domain.id} className="glass-card rounded-xl p-5 card-lift">
               {/* Domain header */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -139,15 +148,19 @@ export function DomainsPage() {
                 </div>
                 <div className="flex gap-2">
                   <button
-                    className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors"
-                    onClick={() => verify.mutate(domain.id)}
+                    className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors press-effect"
+                    onClick={() => verify.mutate(domain.id, {
+                      onSuccess: () => toast.success('Verification triggered'),
+                    })}
                     disabled={verify.isPending}
                   >
                     Verify
                   </button>
                   <button
                     className="text-[11px] text-red-600 hover:text-red-500 px-2 py-1.5 transition-colors"
-                    onClick={() => remove.mutate(domain.id)}
+                    onClick={() => remove.mutate(domain.id, {
+                      onSuccess: () => toast.success('Domain deleted'),
+                    })}
                     disabled={remove.isPending}
                   >
                     Delete
@@ -176,8 +189,11 @@ export function DomainsPage() {
                           <span className="text-[12px] font-medium">{record.label}</span>
                         </div>
                         <button
-                          className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors"
-                          onClick={() => navigator.clipboard.writeText(record.value)}
+                          className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors press-effect"
+                          onClick={() => {
+                            navigator.clipboard.writeText(record.value)
+                            toast('Value copied to clipboard')
+                          }}
                         >
                           Copy Value
                         </button>
@@ -199,7 +215,7 @@ export function DomainsPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Senders</span>
                     <button
-                      className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors"
+                      className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors press-effect"
                       onClick={() => setAddingSenderForDomain(
                         addingSenderForDomain === domain.id ? null : domain.id
                       )}
@@ -223,6 +239,7 @@ export function DomainsPage() {
                         className="bg-secondary/50 border-border/50 focus:border-[hsl(250,90%,65%/0.5)] focus:ring-1 focus:ring-[hsl(250,90%,65%/0.2)]"
                       />
                       <Button
+                        className="press-effect"
                         onClick={() => handleAddSender(domain.id)}
                         disabled={addSender.isPending || !senderEmail.trim()}
                       >
@@ -245,7 +262,9 @@ export function DomainsPage() {
                           </div>
                           <button
                             className="text-[11px] text-red-600 hover:text-red-500 transition-colors"
-                            onClick={() => removeSender.mutate(sender.id)}
+                            onClick={() => removeSender.mutate(sender.id, {
+                              onSuccess: () => toast.success('Sender deleted'),
+                            })}
                           >
                             Delete
                           </button>

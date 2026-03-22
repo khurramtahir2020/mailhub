@@ -1,5 +1,7 @@
 import { useMemo } from 'react'
 import { useUsage, useUsageSummary } from '../hooks/use-usage'
+import { CardSkeleton } from '../components/ui/skeleton'
+import { ListSkeleton } from '../components/ui/skeleton'
 
 function formatDate(daysAgo: number): string {
   const d = new Date()
@@ -17,22 +19,22 @@ export function UsagePage() {
   const stats = [
     {
       label: 'Sent',
-      value: summaryLoading ? '...' : (summary?.emailsSent ?? 0).toLocaleString(),
+      value: (summary?.emailsSent ?? 0).toLocaleString(),
       color: 'from-[hsl(250,90%,65%)] to-[hsl(200,80%,55%)]',
     },
     {
       label: 'Delivered',
-      value: summaryLoading ? '...' : (summary?.emailsDelivered ?? 0).toLocaleString(),
+      value: (summary?.emailsDelivered ?? 0).toLocaleString(),
       color: 'from-emerald-500 to-emerald-400',
     },
     {
       label: 'Bounced',
-      value: summaryLoading ? '...' : (summary?.emailsBounced ?? 0).toLocaleString(),
+      value: (summary?.emailsBounced ?? 0).toLocaleString(),
       color: 'from-amber-500 to-orange-400',
     },
     {
       label: 'Complained',
-      value: summaryLoading ? '...' : (summary?.emailsComplained ?? 0).toLocaleString(),
+      value: (summary?.emailsComplained ?? 0).toLocaleString(),
       color: 'from-red-500 to-rose-400',
     },
   ]
@@ -48,17 +50,26 @@ export function UsagePage() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        {stats.map((stat) => (
-          <div key={stat.label} className="glass-card rounded-xl p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${stat.color}`} />
-              <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">{stat.label}</span>
+      {summaryLoading ? (
+        <div className="grid gap-4 md:grid-cols-4">
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
+          <CardSkeleton />
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-4">
+          {stats.map((stat) => (
+            <div key={stat.label} className="glass-card rounded-xl p-5 card-lift">
+              <div className="flex items-center gap-2 mb-3">
+                <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${stat.color}`} />
+                <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">{stat.label}</span>
+              </div>
+              <p className="text-3xl font-bold tracking-tight">{stat.value}</p>
             </div>
-            <p className="text-3xl font-bold tracking-tight">{stat.value}</p>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Daily breakdown table */}
       <div className="glass-card rounded-xl p-5">
@@ -68,7 +79,7 @@ export function UsagePage() {
         </div>
 
         {dailyLoading ? (
-          <p className="text-[13px] text-muted-foreground">Loading...</p>
+          <ListSkeleton rows={7} />
         ) : !daily || daily.length === 0 ? (
           <div className="py-8 text-center">
             <p className="text-muted-foreground text-[13px]">No usage data for this period.</p>

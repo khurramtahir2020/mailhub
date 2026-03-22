@@ -1,5 +1,8 @@
 import { useState } from 'react'
 import { useMessages, useMessage } from '../hooks/use-messages'
+import { ListSkeleton } from '../components/ui/skeleton'
+import { EmptyState } from '../components/ui/empty-state'
+import { Mail } from 'lucide-react'
 
 const statuses = ['all', 'accepted', 'sent', 'delivered', 'bounced', 'complained', 'rejected'] as const
 
@@ -92,15 +95,16 @@ export function MessagesPage() {
       </div>
 
       {/* Message list */}
-      <div className="glass-card rounded-xl p-5">
-        {isLoading ? (
-          <p className="text-[13px] text-muted-foreground">Loading...</p>
-        ) : !messages || messages.data.length === 0 ? (
-          <div className="py-8 text-center">
-            <p className="text-muted-foreground text-[13px]">No messages found.</p>
-            <p className="text-muted-foreground/60 text-[12px] mt-1">Messages appear here after you send emails via the API.</p>
-          </div>
-        ) : (
+      {isLoading ? (
+        <ListSkeleton />
+      ) : !messages || messages.data.length === 0 ? (
+        <EmptyState
+          icon={Mail}
+          title="No messages found"
+          description="Messages appear here after you send emails via the API."
+        />
+      ) : (
+        <div className="glass-card rounded-xl p-5">
           <div className="divide-y divide-border/30">
             {messages.data.map((msg) => (
               <div
@@ -120,8 +124,8 @@ export function MessagesPage() {
               </div>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Pagination */}
       {messages && messages.pages > 1 && (
@@ -156,7 +160,7 @@ function MessageDetail({ messageId, onBack }: { messageId: string; onBack: () =>
         <button onClick={onBack} className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors">
           Back to messages
         </button>
-        <p className="text-[13px] text-muted-foreground">Loading...</p>
+        <ListSkeleton rows={3} />
       </div>
     )
   }
