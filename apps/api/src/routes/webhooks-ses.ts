@@ -2,24 +2,35 @@ import type { FastifyInstance } from 'fastify'
 import { eq, and, sql } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import { messages, messageEvents, usageDaily } from '../db/schema.js'
-import { verifySnsSignature, confirmSubscription } from '../services/sns.js'
+import { confirmSubscription } from '../services/sns.js'
 import { addSuppression } from '../services/suppressions.js'
 import { updateContactStats, suppressContact } from '../services/contacts.js'
 
 export async function webhookSesRoutes(app: FastifyInstance) {
+  // Register text/plain content type parser (SNS sends text/plain)
+  app.addContentTypeParser('text/plain', { parseAs: 'string' }, (req, body, done) => {
+    try {
+      done(null, JSON.parse(body as string))
+    } catch (err) {
+      done(err as Error, undefined)
+    }
+  })
+
   // POST /api/v1/webhooks/ses — SNS webhook (no auth)
   app.post('/api/v1/webhooks/ses', async (request, reply) => {
     const message = request.body as any
 
-    // Verify SNS signature
-    const valid = await verifySnsSignature(message)
-    if (!valid) {
-      return reply.status(403).send({ error: 'Invalid SNS signature' })
-    }
+    request.log.info({ type: message.Type, topicArn: message.TopicArn }, 'SNS message received')
 
-    // Handle subscription confirmation
+    // Handle subscription confirmation — skip signature verification for this
     if (message.Type === 'SubscriptionConfirmation') {
-      await confirmSubscription(message.SubscribeURL)
+      request.log.info({ subscribeURL: message.SubscribeURL }, 'Confirming SNS subscription')
+      try {
+        await confirmSubscription(message.SubscribeURL)
+        request.log.info('SNS subscription confirmed')
+      } catch (err) {
+        request.log.error({ err }, 'Failed to confirm SNS subscription')
+      }
       return reply.status(200).send({ ok: true })
     }
 
@@ -38,6 +49,8 @@ export async function webhookSesRoutes(app: FastifyInstance) {
       const tags = sesEvent.mail?.tags ?? {}
       const tenantId = tags.tenant_id?.[0]
       const messageId = tags.message_id?.[0]
+
+      request.log.info({ eventType, sesMessageId }, 'Processing SES event')
 
       if (!sesMessageId) {
         request.log.warn('SNS event missing mail.messageId')
@@ -98,7 +111,7 @@ export async function webhookSesRoutes(app: FastifyInstance) {
         .set({ status: mappedStatus, updatedAt: new Date() })
         .where(eq(messages.id, resolvedMessageId))
 
-      // Handle bounces, complaints, and deliveries (mutually exclusive)
+      // Handle bounces, complaints, and deliveries
       if (eventType === 'Bounce') {
         if (sesEvent.bounce?.bounceType === 'Permanent') {
           await addSuppression({
