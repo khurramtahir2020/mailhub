@@ -4,6 +4,8 @@ export interface ApiKey {
   name: string
   keyPrefix: string
   scope: 'send_only' | 'full_access'
+  domainId: string | null
+  domainName: string | null
   lastUsedAt: string | null
   isRevoked: boolean
   createdAt: string
@@ -13,6 +15,7 @@ export interface ApiKey {
 export interface CreateApiKeyRequest {
   name: string
   scope?: 'send_only' | 'full_access'
+  domain_id?: string
 }
 
 export interface CreateApiKeyResponse {
@@ -21,4 +24,6 @@ export interface CreateApiKeyResponse {
   name: string
   keyPrefix: string
   scope: string
+  domainId: string | null
+  domainName: string | null
 }

@@ -18,7 +18,8 @@
       "Bash(find packages/shared -name *.js -not -path */node_modules/*)",
       "Bash(echo \"exit: $?\")",
       "Bash(git rm:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(npm run:*)"
     ]
   }
 }

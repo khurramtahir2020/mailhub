@@ -55,6 +55,19 @@ export async function emailRoutes(app: FastifyInstance) {
     // 3. Parse from address
     const parsed = parseFromAddress(body.from)
 
+    // 3b. Enforce per-domain API key restriction
+    if (request.domainId) {
+      const senderDomain = parsed.email.split('@')[1]
+      const restrictedDomain = await db.query.domains.findFirst({
+        where: eq(domains.id, request.domainId),
+      })
+      if (!restrictedDomain || restrictedDomain.domain !== senderDomain) {
+        return reply.status(403).send({
+          error: { code: 'FORBIDDEN', message: 'This API key can only send from the restricted domain' },
+        })
+      }
+    }
+
     // 4. Validate sender
     const sender = await db.query.senderIdentities.findFirst({
       where: and(

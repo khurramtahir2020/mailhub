@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useApiKeys } from '../hooks/use-api-keys'
+import { useDomains } from '../hooks/use-domains'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
@@ -10,15 +11,23 @@ import { Key } from 'lucide-react'
 
 export function ApiKeysPage() {
   const { keys, isLoading, create, revoke } = useApiKeys()
+  const { domains } = useDomains()
   const [name, setName] = useState('')
+  const [domainId, setDomainId] = useState<string>('')
   const [newKey, setNewKey] = useState<string | null>(null)
+
+  const verifiedDomains = domains.filter((d) => d.status === 'verified')
 
   const handleCreate = () => {
     if (!name.trim()) return
-    create.mutate({ name: name.trim() }, {
+    create.mutate({
+      name: name.trim(),
+      ...(domainId ? { domain_id: domainId } : {}),
+    }, {
       onSuccess: (data) => {
         setNewKey(data.key)
         setName('')
+        setDomainId('')
         toast.success('API key created')
       },
     })
@@ -51,6 +60,20 @@ export function ApiKeysPage() {
               onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
               className="bg-secondary/50 border-border/50 focus:border-[hsl(250,90%,65%/0.5)] focus:ring-1 focus:ring-[hsl(250,90%,65%/0.2)]"
             />
+          </div>
+          <div className="w-48">
+            <Label htmlFor="key-domain" className="sr-only">Domain restriction</Label>
+            <select
+              id="key-domain"
+              value={domainId}
+              onChange={(e) => setDomainId(e.target.value)}
+              className="w-full h-9 rounded-md border border-border/50 bg-secondary/50 px-3 text-[13px] focus:border-[hsl(250,90%,65%/0.5)] focus:ring-1 focus:ring-[hsl(250,90%,65%/0.2)] focus:outline-none"
+            >
+              <option value="">All domains</option>
+              {verifiedDomains.map((d) => (
+                <option key={d.id} value={d.id}>{d.domain}</option>
+              ))}
+            </select>
           </div>
           <Button className="press-effect" onClick={handleCreate} disabled={create.isPending || !name.trim()}>
             Create
@@ -109,6 +132,9 @@ export function ApiKeysPage() {
                         {key.scope}
                       </span>
                     )}
+                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border/50">
+                      {key.domainName ?? 'All domains'}
+                    </span>
                   </div>
                   <code className="font-mono text-[12px] text-muted-foreground">{key.keyPrefix}...</code>
                 </div>

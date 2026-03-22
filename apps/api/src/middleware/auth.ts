@@ -15,6 +15,7 @@ declare module 'fastify' {
   interface FastifyRequest {
     userId?: string
     tenantId?: string
+    domainId?: string
     authMethod?: 'jwt' | 'api_key'
   }
 }
@@ -94,6 +95,7 @@ export async function requireApiKey(request: FastifyRequest, reply: FastifyReply
     .catch(() => {})
 
   request.tenantId = key.tenantId
+  request.domainId = key.domainId ?? undefined
   request.authMethod = 'api_key'
 }
 

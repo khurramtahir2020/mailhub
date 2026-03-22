@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { eq, and } from 'drizzle-orm'
 import { db } from '../db/client.js'
-import { apiKeys } from '../db/schema.js'
+import { apiKeys, domains } from '../db/schema.js'
 import { requireJwt, requireUser } from '../middleware/auth.js'
 import { requireTenantOwnership } from '../middleware/tenant.js'
 import { createApiKeySchema } from '@mailhub/shared'
@@ -18,12 +18,36 @@ export async function apiKeyRoutes(app: FastifyInstance) {
     const body = createApiKeySchema.parse(request.body)
     const { fullKey, prefix, hash } = generateApiKey()
 
+    let domainId: string | undefined
+    let domainName: string | null = null
+
+    if (body.domain_id) {
+      const domain = await db.query.domains.findFirst({
+        where: and(
+          eq(domains.id, body.domain_id),
+          eq(domains.tenantId, request.tenantId!),
+        ),
+      })
+
+      if (!domain) {
+        throw Errors.notFound('Domain')
+      }
+
+      if (domain.status !== 'verified') {
+        throw Errors.validation('Domain must be verified before it can be used to scope an API key')
+      }
+
+      domainId = domain.id
+      domainName = domain.domain
+    }
+
     const [key] = await db.insert(apiKeys).values({
       tenantId: request.tenantId!,
       name: body.name,
       keyPrefix: prefix,
       keyHash: hash,
       scope: body.scope,
+      domainId: domainId ?? null,
     }).returning()
 
     return reply.status(201).send({
@@ -32,6 +56,8 @@ export async function apiKeyRoutes(app: FastifyInstance) {
       name: key.name,
       keyPrefix: key.keyPrefix,
       scope: key.scope,
+      domainId: key.domainId ?? null,
+      domainName,
     })
   })
 
@@ -45,13 +71,32 @@ export async function apiKeyRoutes(app: FastifyInstance) {
         name: true,
         keyPrefix: true,
         scope: true,
+        domainId: true,
         lastUsedAt: true,
         isRevoked: true,
         createdAt: true,
       },
+      with: {
+        domain: {
+          columns: { domain: true },
+        },
+      },
       orderBy: (keys, { desc }) => [desc(keys.createdAt)],
     })
-    return reply.send(keys)
+
+    const result = keys.map((k) => ({
+      id: k.id,
+      name: k.name,
+      keyPrefix: k.keyPrefix,
+      scope: k.scope,
+      domainId: k.domainId ?? null,
+      domainName: k.domain?.domain ?? null,
+      lastUsedAt: k.lastUsedAt,
+      isRevoked: k.isRevoked,
+      createdAt: k.createdAt,
+    }))
+
+    return reply.send(result)
   })
 
   app.delete<{ Params: { tenantId: string; keyId: string } }>(

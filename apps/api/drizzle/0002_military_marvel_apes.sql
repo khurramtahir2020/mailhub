@@ -1,0 +1,2 @@
+ALTER TABLE "api_keys" ADD COLUMN "domain_id" uuid;--> statement-breakpoint
+ALTER TABLE "api_keys" ADD CONSTRAINT "api_keys_domain_id_domains_id_fk" FOREIGN KEY ("domain_id") REFERENCES "public"."domains"("id") ON DELETE no action ON UPDATE no action;

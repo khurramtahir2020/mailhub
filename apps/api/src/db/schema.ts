@@ -30,6 +30,7 @@ export const tenants = pgTable('tenants', {
 export const apiKeys = pgTable('api_keys', {
   id: uuid('id').primaryKey().defaultRandom(),
   tenantId: uuid('tenant_id').references(() => tenants.id).notNull(),
+  domainId: uuid('domain_id').references(() => domains.id),
   name: text('name').notNull(),
   keyPrefix: text('key_prefix').notNull(),
   keyHash: text('key_hash').notNull(),
@@ -77,6 +78,7 @@ export const tenantsRelations = relations(tenants, ({ one, many }) => ({
 
 export const apiKeysRelations = relations(apiKeys, ({ one }) => ({
   tenant: one(tenants, { fields: [apiKeys.tenantId], references: [tenants.id] }),
+  domain: one(domains, { fields: [apiKeys.domainId], references: [domains.id] }),
 }))
 
 // --- Email Tables ---
