@@ -8,7 +8,7 @@ async function fetchCertificate(url: string): Promise<string> {
   if (!parsed.hostname.endsWith('.amazonaws.com')) {
     throw new Error('Invalid SNS certificate URL')
   }
-  const response = await fetch(url)
+  const response = await fetch(url, { signal: AbortSignal.timeout(5000) })
   const cert = await response.text()
   SNS_CERT_CACHE.set(url, cert)
   return cert
@@ -47,5 +47,5 @@ export async function verifySnsSignature(message: any): Promise<boolean> {
 }
 
 export async function confirmSubscription(subscribeUrl: string): Promise<void> {
-  await fetch(subscribeUrl)
+  await fetch(subscribeUrl, { signal: AbortSignal.timeout(5000) })
 }

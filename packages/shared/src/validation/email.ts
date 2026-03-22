@@ -1,7 +1,10 @@
 import { z } from 'zod'
 
 export const sendEmailSchema = z.object({
-  from: z.string().min(1).max(500),
+  from: z.string().min(1).max(500).refine(
+    (v) => /^[^\r\n]*$/.test(v),
+    { message: 'From address contains invalid characters' }
+  ),
   to: z.string().email().max(255),
   subject: z.string().min(1).max(500).optional(),
   html: z.string().optional(),

@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify'
 import { eq, and, sql } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import { messages, messageEvents, usageDaily } from '../db/schema.js'
-import { confirmSubscription } from '../services/sns.js'
+import { verifySnsSignature, confirmSubscription } from '../services/sns.js'
 import { addSuppression } from '../services/suppressions.js'
 import { updateContactStats, suppressContact } from '../services/contacts.js'
 
@@ -36,6 +36,12 @@ export async function webhookSesRoutes(app: FastifyInstance) {
 
     // Handle notification
     if (message.Type === 'Notification') {
+      // Verify signature for notifications
+      const valid = await verifySnsSignature(message)
+      if (!valid) {
+        request.log.warn('SNS notification signature verification failed')
+        return reply.status(403).send({ error: 'Invalid signature' })
+      }
       let sesEvent: any
       try {
         sesEvent = JSON.parse(message.Message)
@@ -66,6 +72,11 @@ export async function webhookSesRoutes(app: FastifyInstance) {
 
       if (!msg) {
         request.log.warn({ sesMessageId }, 'Orphaned SES event — message not found')
+        return reply.status(200).send({ ok: true })
+      }
+
+      if (tenantId && tenantId !== msg.tenantId) {
+        request.log.warn({ tenantId, msgTenantId: msg.tenantId }, 'Tenant mismatch in SES event')
         return reply.status(200).send({ ok: true })
       }
 

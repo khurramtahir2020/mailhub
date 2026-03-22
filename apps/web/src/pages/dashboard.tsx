@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import { useSession } from '../hooks/use-session'
 import { useUsageSummary } from '../hooks/use-usage'
 import { CardSkeleton } from '../components/ui/skeleton'
@@ -102,24 +103,24 @@ export function DashboardPage() {
             Quick Actions
           </span>
           <div className="flex gap-2 mt-3">
-            <a
-              href="/domains"
+            <Link
+              to="/domains"
               className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 text-foreground transition-colors press-effect"
             >
               Add Domain
-            </a>
-            <a
-              href="/api-keys"
+            </Link>
+            <Link
+              to="/api-keys"
               className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 text-foreground transition-colors press-effect"
             >
               Create API Key
-            </a>
-            <a
-              href="/templates"
+            </Link>
+            <Link
+              to="/templates"
               className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 text-foreground transition-colors press-effect"
             >
               New Template
-            </a>
+            </Link>
           </div>
         </div>
       </div>

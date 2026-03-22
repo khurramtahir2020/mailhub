@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { eq, and } from 'drizzle-orm'
 import { db } from '../db/client.js'
-import { domains, senderIdentities } from '../db/schema.js'
+import { domains, senderIdentities, apiKeys } from '../db/schema.js'
 import { requireJwt, requireUser } from '../middleware/auth.js'
 import { requireTenantOwnership } from '../middleware/tenant.js'
 import { createDomainSchema, BLOCKED_DOMAINS } from '@mailhub/shared'
@@ -176,6 +176,11 @@ export async function domainRoutes(app: FastifyInstance) {
     } catch (err) {
       request.log.warn({ err, domain: domain.domain }, 'SES deleteDomainIdentity failed')
     }
+
+    // Revoke API keys scoped to this domain
+    await db.update(apiKeys)
+      .set({ isRevoked: true, updatedAt: new Date() })
+      .where(and(eq(apiKeys.domainId, domain.id), eq(apiKeys.isRevoked, false)))
 
     // Delete associated sender identities
     await db.delete(senderIdentities).where(eq(senderIdentities.domainId, domain.id))

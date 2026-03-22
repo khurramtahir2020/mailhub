@@ -7,6 +7,10 @@ import { requireTenantOwnership } from '../middleware/tenant.js'
 import { parsePagination, paginatedResponse } from '../lib/pagination.js'
 import { Errors } from '../lib/errors.js'
 
+function escapeLike(str: string): string {
+  return str.replace(/[%_\\]/g, '\\$&')
+}
+
 export async function contactRoutes(app: FastifyInstance) {
   app.addHook('preHandler', requireJwt)
   app.addHook('preHandler', requireUser)
@@ -28,7 +32,7 @@ export async function contactRoutes(app: FastifyInstance) {
       conditions.push(eq(contacts.status, status))
     }
     if (search) {
-      conditions.push(ilike(contacts.email, `%${search}%`))
+      conditions.push(ilike(contacts.email, `%${escapeLike(search)}%`))
     }
 
     const where = and(...conditions)

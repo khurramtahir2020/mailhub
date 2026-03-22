@@ -6,6 +6,9 @@ import { db } from '../db/client.js'
 import { users, apiKeys, tenants } from '../db/schema.js'
 import { Errors } from '../lib/errors.js'
 import { config } from '../config.js'
+import pino from 'pino'
+
+const authLogger = pino({ name: 'auth' })
 
 const JWKS = createRemoteJWKSet(
   new URL(`https://${config.AUTH0_DOMAIN}/.well-known/jwks.json`)
@@ -92,7 +95,7 @@ export async function requireApiKey(request: FastifyRequest, reply: FastifyReply
     .set({ lastUsedAt: new Date(), updatedAt: new Date() })
     .where(eq(apiKeys.id, key.id))
     .then(() => {})
-    .catch(() => {})
+    .catch((err) => authLogger.warn({ err }, 'Failed to update API key lastUsedAt'))
 
   request.tenantId = key.tenantId
   request.domainId = key.domainId ?? undefined
