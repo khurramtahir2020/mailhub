@@ -10,7 +10,7 @@ interface AdminTenant {
   mode: string
   dailySendLimit: number
   ownerEmail: string
-  emailsSent: number
+  emailsSentThisMonth: number
   createdAt: string
   suspendedAt: string | null
   suspensionReason: string | null

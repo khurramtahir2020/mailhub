@@ -152,7 +152,7 @@ export function AdminTenantsPage() {
                         {statusBadge(tenant.status)}
                       </div>
                       <p className="text-[12px] text-muted-foreground">
-                        {tenant.ownerEmail} | Sent: {tenant.emailsSent.toLocaleString()} | Limit: {tenant.dailySendLimit.toLocaleString()}/day
+                        {tenant.ownerEmail || 'N/A'} | Sent: {(tenant.emailsSentThisMonth ?? 0).toLocaleString()} | Limit: {(tenant.dailySendLimit ?? 0).toLocaleString()}/day
                       </p>
                     </div>
 
