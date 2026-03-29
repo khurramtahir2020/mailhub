@@ -25,7 +25,7 @@ export async function monitorRates() {
         })
 
         const totalSent = usage.reduce((sum, u) => sum + u.emailsSent, 0)
-        if (totalSent === 0) continue
+        if (totalSent < 100) continue // Need minimum volume for meaningful rate calculation
 
         const totalBounced = usage.reduce((sum, u) => sum + u.emailsBounced, 0)
         const totalComplained = usage.reduce((sum, u) => sum + u.emailsComplained, 0)
